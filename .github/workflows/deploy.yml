@@ -1,0 +1,63 @@
+name: OBLIGE Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 수동 실행 허용
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # ── 1. 프론트엔드 → GitHub Pages ──────────────────────────
+  deploy-frontend:
+    name: 🌐 GitHub Pages 배포
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: API URL 주입 (Render 백엔드 URL → config.js)
+        run: |
+          sed -i "s|REPLACE_API_URL|${{ secrets.RENDER_API_URL }}|g" js/config.js
+          echo "✅ API URL 설정 완료: ${{ secrets.RENDER_API_URL }}"
+
+      - name: GitHub Pages 설정
+        uses: actions/configure-pages@v4
+
+      - name: 정적 파일 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── 2. 백엔드 → Render.com 자동 배포 트리거 ─────────────
+  deploy-backend:
+    name: 🚀 Render 백엔드 배포
+    runs-on: ubuntu-latest
+    needs: deploy-frontend  # 프론트 배포 후 실행
+
+    steps:
+      - name: Render 배포 훅 호출
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -s "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+              -X POST \
+              -H "Content-Type: application/json"
+            echo "✅ Render 배포 트리거 완료"
+          else
+            echo "⚠️  RENDER_DEPLOY_HOOK 시크릿이 없습니다. Render 대시보드에서 수동 배포해주세요."
+          fi

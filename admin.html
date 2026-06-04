@@ -4,18 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OBLIGE Admin</title>
+  <script src="js/config.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
   <style>
     :root {
       --navy: #0D1240; --pink: #F03E8C; --white: #fff;
       --bg:   #F4F5F9; --sidebar: #0D1240; --card: #fff;
       --muted:#6B6B7E; --light: #E8E9EF;
       --success:#22C55E; --warn:#F59E0B; --danger:#EF4444; --info:#3B82F6;
+      --font: 'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Helvetica Neue',Arial,sans-serif; background:var(--bg); color:var(--navy); }
+    html, body { background:var(--sidebar); }
+    body { font-family:var(--font); background:var(--bg); color:var(--navy);
+           -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
 
     /* ── LAYOUT ── */
-    .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+    .layout { min-height:100vh; }
 
     /* ── SIDEBAR ── */
     aside {
@@ -43,15 +48,22 @@
     .nav-item.active .nav-badge { background:rgba(255,255,255,.25); }
 
     /* ── MAIN ── */
-    main { margin-left:240px; padding:32px 36px; min-height:100vh; }
+    main {
+      margin-left:240px;
+      padding:32px 40px;
+      min-height:100vh;
+      background:var(--bg);
+      max-width:calc(100vw - 240px);
+      overflow-x:hidden;
+    }
 
     /* ── TOPBAR ── */
-    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
-    .page-title { font-size:22px; font-weight:900; }
+    .topbar { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:12px; }
+    .page-title { font-size:22px; font-weight:900; line-height:1.2; }
     .page-sub { font-size:13px; color:var(--muted); margin-top:4px; }
-    .topbar-right { display:flex; align-items:center; gap:16px; }
-    .admin-badge { background:var(--navy); color:#fff; font-size:12px; font-weight:700; padding:8px 16px; border-radius:6px; display:flex; align-items:center; gap:8px; }
-    .logout-btn { background:none; border:1.5px solid var(--light); color:var(--muted); font-size:13px; font-weight:600; padding:8px 16px; border-radius:6px; cursor:pointer; transition:all .2s; }
+    .topbar-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    .admin-badge { background:var(--navy); color:#fff; font-size:12px; font-weight:700; padding:8px 14px; border-radius:6px; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    .logout-btn { background:none; border:1.5px solid var(--light); color:var(--muted); font-size:13px; font-weight:600; padding:8px 14px; border-radius:6px; cursor:pointer; transition:all .2s; white-space:nowrap; }
     .logout-btn:hover { border-color:var(--danger); color:var(--danger); }
 
     /* ── STAT CARDS ── */
@@ -172,9 +184,16 @@
     .section { display:none; }
     .section.active { display:block; }
 
+    /* ── TABLE SCROLL ── */
+    .table-wrap { overflow-x:auto; }
+
     /* ── RESPONSIVE ── */
+    @media(max-width:1400px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
     @media(max-width:1100px) { .stats-grid { grid-template-columns:repeat(2,1fr); } }
-    @media(max-width:768px) { .layout { grid-template-columns:1fr; } aside { display:none; } main { margin-left:0; padding:20px; } }
+    @media(max-width:768px) {
+      aside { display:none; }
+      main { margin-left:0; padding:20px; max-width:100vw; }
+    }
   </style>
 </head>
 <body>
@@ -244,7 +263,7 @@
       <!-- 최근 주문 -->
       <div class="card">
         <div class="card-header"><span class="card-title">최근 주문</span><button class="btn btn-ghost btn-sm" onclick="goto('orders')">전체 보기 →</button></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>주문번호</th><th>회원명</th><th>금액</th><th>상태</th><th>일시</th><th>처리</th></tr></thead>
             <tbody id="recent-orders"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -255,7 +274,7 @@
       <!-- 반납 대기 -->
       <div class="card">
         <div class="card-header"><span class="card-title">공병 반납 검수 대기</span><button class="btn btn-ghost btn-sm" onclick="goto('returns')">전체 보기 →</button></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>반납번호</th><th>회원명</th><th>수량</th><th>예상 포인트</th><th>방식</th><th>신청일</th><th>처리</th></tr></thead>
             <tbody id="pending-returns"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -278,7 +297,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">회원 목록</span><span id="user-count" style="font-size:13px;color:var(--muted)"></span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>#</th><th>이름</th><th>이메일</th><th>등급</th><th>포인트</th><th>반납수</th><th>상태</th><th>가입일</th><th>관리</th></tr></thead>
             <tbody id="user-tbody"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -294,7 +313,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">상품 목록</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>#</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>비건</th><th>리필</th><th>반납P</th><th>상태</th><th>관리</th></tr></thead>
             <tbody id="product-tbody"><tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -319,7 +338,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">주문 목록</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>주문번호</th><th>회원</th><th>상품수</th><th>금액</th><th>상태</th><th>주문일</th><th>처리</th></tr></thead>
             <tbody id="order-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -343,7 +362,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">공병 반납 목록</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>반납번호</th><th>회원명</th><th>방식</th><th>수량</th><th>포인트</th><th>상태</th><th>신청일</th><th>처리</th></tr></thead>
             <tbody id="return-tbody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -359,7 +378,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">캠페인 목록</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>#</th><th>제목</th><th>리워드</th><th>미션</th><th>기간</th><th>참여자</th><th>상태</th></tr></thead>
             <tbody id="campaign-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">로딩 중...</td></tr></tbody>
@@ -378,7 +397,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">ESG 임팩트 상위 회원</span></div>
-        <div class="card-body" style="padding:0">
+        <div class="card-body table-wrap" style="padding:0">
           <table>
             <thead><tr><th>순위</th><th>회원명</th><th>등급</th><th>반납 수</th><th>절감 플라스틱</th><th>절감 CO₂</th><th>보유 포인트</th></tr></thead>
             <tbody id="esg-tbody"></tbody>
@@ -519,6 +538,16 @@
         <label class="form-label">상품 설명</label>
         <textarea class="form-textarea" id="pm-desc" placeholder="상품 설명을 입력하세요"></textarea>
       </div>
+      <!-- 이미지 업로드 (수정 모드에서만 표시) -->
+      <div id="pm-img-section" style="display:none">
+        <label class="form-label">상품 이미지</label>
+        <div id="pm-img-list" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px"></div>
+        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border:2px dashed var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);transition:.2s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span>📷 이미지 추가</span>
+          <input type="file" id="pm-img-input" accept="image/*" multiple style="display:none" onchange="uploadProductImage(this)">
+        </label>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">JPG, PNG, WEBP · 최대 5MB · 첫 번째 이미지가 대표 이미지</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('product-modal')">취소</button>
@@ -572,49 +601,19 @@
 <div id="toast-wrap"></div>
 
 <script>
-const API = '/api';
+const API = (window.OBLIGE_CONFIG?.API_URL && window.OBLIGE_CONFIG.API_URL !== 'REPLACE_API_URL')
+  ? window.OBLIGE_CONFIG.API_URL
+  : '/api';
 let adminToken = localStorage.getItem('oblige_admin_token');
 let currentOrderId = null, currentReturnId = null, currentUserId = null, editProductId = null;
 
-// ── MOCK DATA ─────────────────────────────────────────────
-const MOCK = {
-  dashboard: {
-    total_users:156, new_users_today:3, total_orders:284, total_revenue:8920000,
-    revenue_today:340000, approved_returns:47, total_bottles:312, plastic_kg_saved:15.6,
-    pending_inspections:5, total_points_issued:245000, total_points_used:89000,
-    grade_distribution:[
-      {grade_name:'Seed',cnt:98},{grade_name:'Leaf',cnt:37},
-      {grade_name:'Tree',cnt:15},{grade_name:'Forest',cnt:6}
-    ]
-  },
-  users:[
-    {user_id:1,name:'김지현',email:'jihyun@oblige.kr',grade_name:'Leaf',grade_icon:'🍃',total_point:1200,total_returns:4,is_active:1,created_at:'2026-03-15'},
-    {user_id:2,name:'박민준',email:'minjun@oblige.kr',grade_name:'Tree',grade_icon:'🌳',total_point:3400,total_returns:8,is_active:1,created_at:'2026-02-20'},
-    {user_id:3,name:'이수아',email:'sua@oblige.kr',  grade_name:'Forest',grade_icon:'🌲',total_point:7200,total_returns:17,is_active:1,created_at:'2026-01-10'},
-    {user_id:4,name:'최동훈',email:'donghun@oblige.kr',grade_name:'Seed',grade_icon:'🌱',total_point:200,total_returns:0,is_active:1,created_at:'2026-05-28'},
-  ],
-  products:[
-    {product_id:1,product_name:'OBLIGE Calm Toner',  category_name:'토너',price:38000,stock:100,is_vegan:1,is_refillable:1,return_point:500,is_active:1},
-    {product_id:2,product_name:'OBLIGE Glow Ampoule',category_name:'앰플',price:45000,stock:80, is_vegan:1,is_refillable:1,return_point:700,is_active:1},
-    {product_id:3,product_name:'OBLIGE Barrier Cream',category_name:'크림',price:42000,stock:90, is_vegan:1,is_refillable:1,return_point:600,is_active:1},
-    {product_id:4,product_name:'OBLIGE Refill Set',  category_name:'리필상품',price:29000,stock:50, is_vegan:1,is_refillable:0,return_point:0,  is_active:1},
-  ],
-  orders:[
-    {order_id:1,order_number:'ORD-20260601-000001',user_name:'김지현',item_count:2,final_price:83000,order_status:'SHIPPING', created_at:'2026-06-01'},
-    {order_id:2,order_number:'ORD-20260601-000002',user_name:'박민준',item_count:1,final_price:45000,order_status:'DELIVERED',created_at:'2026-06-01'},
-    {order_id:3,order_number:'ORD-20260602-000003',user_name:'이수아',item_count:3,final_price:122000,order_status:'PAID',    created_at:'2026-06-02'},
-    {order_id:4,order_number:'ORD-20260602-000004',user_name:'최동훈',item_count:1,final_price:38000,order_status:'ORDERED', created_at:'2026-06-02'},
-  ],
-  returns:[
-    {return_id:1,return_number:'RET-20260602-000001',user_name:'김지현',return_method:'DELIVERY',total_quantity:2,total_point:1200,return_status:'INSPECTING',created_at:'2026-06-02'},
-    {return_id:2,return_number:'RET-20260601-000001',user_name:'이수아',return_method:'OFFLINE', total_quantity:5,total_point:3000,return_status:'APPROVED',  created_at:'2026-06-01'},
-    {return_id:3,return_number:'RET-20260602-000002',user_name:'박민준',return_method:'DELIVERY',total_quantity:1,total_point:500, return_status:'REQUESTED', created_at:'2026-06-02'},
-  ],
-  campaigns:[
-    {campaign_id:1,title:'#OBLIGE공병반납 챌린지',reward_point:300,mission_desc:'SNS 인증샷',start_date:'2026-06-01',end_date:'2026-08-31',is_active:1,participant_count:48},
-    {campaign_id:2,title:'비건 뷰티 일기 챌린지', reward_point:200,mission_desc:'블로그 공유',  start_date:'2026-06-01',end_date:'2026-07-31',is_active:1,participant_count:23},
-  ]
-};
+// ── 빈 상태 렌더 헬퍼 ─────────────────────────────────────
+function emptyRow(cols, msg='데이터가 없습니다') {
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--muted);padding:40px">${msg}</td></tr>`;
+}
+function errorRow(cols, err) {
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--danger);padding:40px">⚠️ ${err}</td></tr>`;
+}
 
 // ── AUTH ─────────────────────────────────────────────────
 async function adminLogin() {
@@ -623,20 +622,21 @@ async function adminLogin() {
   const err   = document.getElementById('adm-err');
   err.textContent = '';
 
+  console.log('[adminLogin] 시도:', email);
   const res = await apiCall('POST', '/auth/login', {email, password:pw}, false);
+  console.log('[adminLogin] 응답:', res);
 
-  if (res?.token && res?.user?.role === 'ADMIN') {
+  if (res === null) {
+    err.textContent = '서버에 연결할 수 없습니다. PHP 서버가 실행 중인지 확인해주세요.';
+  } else if (res.token && res.user?.role === 'ADMIN') {
     adminToken = res.token;
     localStorage.setItem('oblige_admin_token', res.token);
     document.getElementById('admin-name').textContent = res.user.name;
     showApp();
-  } else if (email === 'admin@oblige.kr') {
-    // 데모 모드
-    adminToken = 'demo';
-    localStorage.setItem('oblige_admin_token', 'demo');
-    showApp();
+  } else if (res.token && res.user?.role !== 'ADMIN') {
+    err.textContent = '관리자 계정이 아닙니다.';
   } else {
-    err.textContent = '이메일 또는 비밀번호가 올바르지 않습니다';
+    err.textContent = res.error || '이메일 또는 비밀번호가 올바르지 않습니다';
   }
 }
 
@@ -659,9 +659,16 @@ async function apiCall(method, path, body, auth=true) {
   if (auth && adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
   try {
     const res = await fetch(API + path, {method, headers, body: body ? JSON.stringify(body) : undefined});
-    if (!res.ok) return null;
-    return await res.json().catch(()=>null);
-  } catch { return null; }
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch(e) {
+      console.error('API 비JSON 응답:', text.slice(0, 300));
+      return { error: 'API 응답 오류' };
+    }
+  } catch(e) {
+    console.error('네트워크 오류:', e.message);
+    return null;
+  }
 }
 
 // ── NAVIGATION ────────────────────────────────────────────
@@ -723,7 +730,14 @@ function fmtNum(n) { return Number(n).toLocaleString(); }
 
 // ── DASHBOARD ─────────────────────────────────────────────
 async function loadDashboard() {
-  const res = await apiCall('GET', '/admin/dashboard') || MOCK.dashboard;
+  const res = await apiCall('GET', '/admin/dashboard');
+  if (!res || res.error) {
+    document.getElementById('st-users').textContent = '—';
+    document.getElementById('st-orders').textContent = '—';
+    document.getElementById('st-returns').textContent = '—';
+    document.getElementById('st-pending').textContent = '—';
+    return;
+  }
   document.getElementById('st-users').textContent   = fmtNum(res.total_users);
   document.getElementById('st-users-sub').textContent = `오늘 신규 ${res.new_users_today}명`;
   document.getElementById('st-orders').textContent  = fmtNum(res.total_orders);
@@ -734,49 +748,54 @@ async function loadDashboard() {
   document.getElementById('pending-badge').textContent = res.pending_inspections;
 
   // 최근 주문
-  const orders = (await apiCall('GET','/admin/orders') || MOCK.orders).slice(0,5);
-  document.getElementById('recent-orders').innerHTML = orders.map(o=>`
-    <tr>
-      <td class="td-bold">${o.order_number}</td>
-      <td>${o.user_name||'-'}</td>
-      <td style="text-align:center">${o.item_count||1}개</td>
-      <td class="td-bold">₩${fmtNum(o.final_price)}</td>
-      <td>${pill(o.order_status)}</td>
-      <td class="td-muted">${fmtDate(o.created_at)}</td>
-      <td><button class="btn btn-ghost btn-xs" onclick="openOrderModal(${o.order_id},'${o.order_number}')">처리</button></td>
-    </tr>
-  `).join('');
+  const ordRes = await apiCall('GET','/admin/orders');
+  const orders = (Array.isArray(ordRes) ? ordRes : []).slice(0,5);
+  document.getElementById('recent-orders').innerHTML = orders.length
+    ? orders.map(o=>`
+        <tr>
+          <td class="td-bold">${o.order_number}</td>
+          <td>${o.user_name||'-'}</td>
+          <td style="text-align:center">${o.item_count||1}개</td>
+          <td class="td-bold">₩${fmtNum(o.final_price)}</td>
+          <td>${pill(o.order_status)}</td>
+          <td class="td-muted">${fmtDate(o.created_at)}</td>
+          <td><button class="btn btn-ghost btn-xs" onclick="openOrderModal(${o.order_id},'${o.order_number}')">처리</button></td>
+        </tr>`).join('')
+    : emptyRow(7, '주문 내역이 없습니다');
 
   // 반납 대기
-  const rets = (await apiCall('GET','/admin/returns?status=INSPECTING') || MOCK.returns.filter(r=>r.return_status==='INSPECTING' || r.return_status==='REQUESTED'));
-  document.getElementById('pending-returns').innerHTML = rets.length ? rets.map(r=>`
-    <tr>
-      <td class="td-bold">${r.return_number}</td>
-      <td>${r.user_name}</td>
-      <td style="text-align:center">${r.total_quantity}개</td>
-      <td style="color:var(--pink);font-weight:700">${fmtNum(r.total_point)}P</td>
-      <td>${r.return_method==='DELIVERY'?'📦 택배':'🏪 오프라인'}</td>
-      <td class="td-muted">${fmtDate(r.created_at)}</td>
-      <td><button class="btn btn-success btn-xs" onclick="openReturnModal(${r.return_id})">검수 처리</button></td>
-    </tr>
-  `).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">대기 중인 반납이 없습니다</td></tr>';
+  const retRes = await apiCall('GET','/admin/returns?status=INSPECTING');
+  const rets = Array.isArray(retRes) ? retRes : [];
+  document.getElementById('pending-returns').innerHTML = rets.length
+    ? rets.map(r=>`
+        <tr>
+          <td class="td-bold">${r.return_number}</td>
+          <td>${r.user_name}</td>
+          <td style="text-align:center">${r.total_quantity}개</td>
+          <td style="color:var(--pink);font-weight:700">${fmtNum(r.total_point)}P</td>
+          <td>${r.return_method==='DELIVERY'?'📦 택배':'🏪 오프라인'}</td>
+          <td class="td-muted">${fmtDate(r.created_at)}</td>
+          <td><button class="btn btn-success btn-xs" onclick="openReturnModal(${r.return_id})">검수 처리</button></td>
+        </tr>`).join('')
+    : emptyRow(7, '검수 대기 중인 반납이 없습니다');
 
   // 등급 분포
-  const dist = res.grade_distribution || MOCK.dashboard.grade_distribution;
+  const dist = res.grade_distribution || [];
   const total = dist.reduce((s,g)=>s+Number(g.cnt),0)||1;
-  document.getElementById('grade-dist').innerHTML = dist.map(g=>`
-    <div class="esg-bar-wrap">
-      <div class="esg-bar-label"><span>${g.grade_name}</span><span>${g.cnt}명 (${Math.round(g.cnt/total*100)}%)</span></div>
-      <div class="esg-track"><div class="esg-fill" style="width:${Math.round(g.cnt/total*100)}%"></div></div>
-    </div>
-  `).join('');
+  document.getElementById('grade-dist').innerHTML = dist.length
+    ? dist.map(g=>`
+        <div class="esg-bar-wrap">
+          <div class="esg-bar-label"><span>${g.grade_name}</span><span>${g.cnt}명 (${Math.round(g.cnt/total*100)}%)</span></div>
+          <div class="esg-track"><div class="esg-fill" style="width:${Math.round(g.cnt/total*100)}%"></div></div>
+        </div>`).join('')
+    : '<p style="color:var(--muted);font-size:13px">등급 데이터 없음</p>';
 }
 
 // ── USERS ─────────────────────────────────────────────────
 async function loadUsers() {
   const q = document.getElementById('user-search')?.value || '';
-  const res = await apiCall('GET', `/admin/users${q?'?q='+encodeURIComponent(q):''}`) || MOCK.users;
-  const users = Array.isArray(res) ? res : (res.data || MOCK.users);
+  const res = await apiCall('GET', `/admin/users${q?'?q='+encodeURIComponent(q):''}`);
+  const users = Array.isArray(res) ? res : [];
   document.getElementById('user-count').textContent = `총 ${users.length}명`;
   document.getElementById('user-tbody').innerHTML = users.map(u=>`
     <tr>
@@ -824,7 +843,7 @@ async function submitPointAdjust() {
 
 // ── PRODUCTS ─────────────────────────────────────────────
 async function loadProducts() {
-  const res = await apiCall('GET', '/products', null, false) || MOCK.products;
+  const res = await apiCall('GET', '/products', null, false) || [];
   document.getElementById('product-tbody').innerHTML = res.map(p=>`
     <tr>
       <td class="td-muted">${p.product_id}</td>
@@ -844,25 +863,126 @@ async function loadProducts() {
   `).join('');
 }
 
-function openProductModal(id=null) {
+let pendingImages = []; // 신규 등록 시 임시 저장 파일
+
+async function openProductModal(id=null) {
   editProductId = id;
+  pendingImages = [];
   document.getElementById('pm-title').textContent = id ? '상품 수정' : '상품 등록';
+  document.getElementById('pm-img-section').style.display = 'block';
+  document.getElementById('pm-img-list').innerHTML = '';
+
   if (!id) {
     ['pm-name','pm-price','pm-stock','pm-earn','pm-return','pm-desc'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('pm-vegan').checked = true;
     document.getElementById('pm-refill').checked = false;
   } else {
-    const p = MOCK.products.find(x=>x.product_id===id);
-    if (p) {
+    const p = await apiCall('GET', `/products/${id}`, null, false);
+    if (p && !p.error) {
       document.getElementById('pm-name').value = p.product_name;
       document.getElementById('pm-price').value = p.price;
       document.getElementById('pm-stock').value = p.stock;
       document.getElementById('pm-return').value = p.return_point;
+      document.getElementById('pm-earn').value = p.earn_point;
+      document.getElementById('pm-desc').value = p.description || '';
       document.getElementById('pm-vegan').checked = !!p.is_vegan;
       document.getElementById('pm-refill').checked = !!p.is_refillable;
+      document.getElementById('pm-cat').value = p.category_id;
+      renderSavedImages(p.images || []);
     }
   }
   openModal('product-modal');
+}
+
+// 저장된 이미지(수정 모드)
+function renderSavedImages(images) {
+  const wrap = document.getElementById('pm-img-list');
+  const saved = images.map(img => `
+    <div style="position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid ${img.is_main?'var(--pink)':'var(--border)'}">
+      <img src="${img.image_url}" style="width:100%;height:100%;object-fit:cover">
+      ${img.is_main ? '<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);color:#fff;font-size:10px;text-align:center;font-weight:700">대표</div>' : ''}
+      <button onclick="deleteProductImage(${img.image_id})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:1">×</button>
+    </div>
+  `).join('');
+  wrap.innerHTML = saved;
+}
+
+// 선택된 파일 미리보기 추가 (신규+수정 공통)
+function addImagePreview(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('pm-img-list');
+    const isFirst = wrap.children.length === 0;
+    const div = document.createElement('div');
+    div.style.cssText = `position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid ${isFirst?'var(--pink)':'var(--border)'}`;
+    div.innerHTML = `
+      <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">
+      ${isFirst ? '<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);color:#fff;font-size:10px;text-align:center;font-weight:700">대표</div>' : ''}
+      <div style="position:absolute;top:2px;right:2px;background:rgba(255,165,0,.9);color:#fff;font-size:9px;padding:1px 3px;border-radius:3px;font-weight:700">NEW</div>
+    `;
+    wrap.appendChild(div);
+  };
+  reader.readAsDataURL(file);
+}
+
+// 파일 선택 핸들러
+async function uploadProductImage(input) {
+  if (!input.files.length) return;
+  const files = Array.from(input.files);
+  input.value = '';
+
+  if (editProductId) {
+    // 수정 모드: 즉시 업로드
+    for (const file of files) {
+      await doUploadImage(editProductId, file);
+    }
+    const p = await apiCall('GET', `/products/${editProductId}`, null, false);
+    renderSavedImages(p?.images || []);
+    loadProducts();
+  } else {
+    // 신규 등록 모드: 임시 저장 후 미리보기만
+    files.forEach(file => {
+      pendingImages.push(file);
+      addImagePreview(file);
+    });
+  }
+}
+
+// 실제 업로드 실행
+async function doUploadImage(productId, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  try {
+    const res = await fetch(API + `/products/${productId}/images`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + adminToken },
+      body: formData
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) {
+      console.error('업로드 응답 파싱 오류:', text.slice(0,200));
+      toast('업로드 응답 오류', 'error');
+      return false;
+    }
+    if (!res.ok || data.error) {
+      toast('업로드 실패: ' + (data.error || res.status), 'error');
+      return false;
+    }
+    return true;
+  } catch(e) {
+    toast('네트워크 오류: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function deleteProductImage(imageId) {
+  if (!confirm('이미지를 삭제하시겠습니까?')) return;
+  await apiCall('DELETE', `/products/${editProductId}/images/${imageId}`);
+  toast('이미지가 삭제되었습니다', 'success');
+  const p = await apiCall('GET', `/products/${editProductId}`, null, false);
+  renderSavedImages(p?.images || []);
+  loadProducts();
 }
 
 async function submitProduct() {
@@ -878,14 +998,28 @@ async function submitProduct() {
     description: document.getElementById('pm-desc').value,
   };
   if (!body.product_name || !body.price) { toast('상품명과 가격은 필수입니다','error'); return; }
+
   if (editProductId) {
     await apiCall('PUT', `/products/${editProductId}`, body);
+    // 수정 모드에서도 미업로드 pending 있으면 처리
+    if (pendingImages.length) {
+      for (const file of pendingImages) await doUploadImage(editProductId, file);
+      pendingImages = [];
+    }
     toast('상품이 수정되었습니다', 'success');
   } else {
-    await apiCall('POST', '/products', body);
+    const res = await apiCall('POST', '/products', body);
+    if (!res?.product_id) { toast('상품 등록에 실패했습니다', 'error'); return; }
+    // 신규 등록 후 pending 이미지 업로드
+    if (pendingImages.length) {
+      toast('이미지 업로드 중...', 'info');
+      for (const file of pendingImages) await doUploadImage(res.product_id, file);
+      pendingImages = [];
+    }
     toast('상품이 등록되었습니다', 'success');
   }
-  closeModal('product-modal'); loadProducts();
+  closeModal('product-modal');
+  loadProducts();
 }
 
 async function deleteProduct(id) {
@@ -897,7 +1031,7 @@ async function deleteProduct(id) {
 // ── ORDERS ─────────────────────────────────────────────────
 async function loadOrders() {
   const status = document.getElementById('order-status-filter')?.value || '';
-  const res = await apiCall('GET', `/admin/orders${status?'?status='+status:''}`) || MOCK.orders;
+  const res = await apiCall('GET', `/admin/orders${status?'?status='+status:''}`) || [];
   document.getElementById('order-tbody').innerHTML = res.map(o=>`
     <tr>
       <td class="td-bold">${o.order_number}</td>
@@ -931,7 +1065,7 @@ async function submitOrderStatus() {
 // ── RETURNS ────────────────────────────────────────────────
 async function loadReturns() {
   const status = document.getElementById('ret-status-filter')?.value || '';
-  const res = await apiCall('GET', `/admin/returns${status?'?status='+status:''}`) || MOCK.returns;
+  const res = await apiCall('GET', `/admin/returns${status?'?status='+status:''}`) || [];
   document.getElementById('return-tbody').innerHTML = res.map(r=>`
     <tr>
       <td class="td-bold">${r.return_number}</td>
@@ -979,7 +1113,7 @@ async function submitReturnStatus() {
 
 // ── CAMPAIGNS ──────────────────────────────────────────────
 async function loadCampaigns() {
-  const res = await apiCall('GET', '/campaigns', null, false) || MOCK.campaigns;
+  const res = await apiCall('GET', '/campaigns', null, false) || [];
   document.getElementById('campaign-tbody').innerHTML = res.map(c=>`
     <tr>
       <td class="td-muted">${c.campaign_id}</td>
@@ -1015,14 +1149,16 @@ async function submitCampaign() {
 
 // ── ESG ────────────────────────────────────────────────────
 async function loadEsg() {
-  const res = await apiCall('GET','/admin/dashboard') || MOCK.dashboard;
+  const res = await apiCall('GET','/admin/dashboard');
+  if (!res || res.error) return;
   document.getElementById('esg-bottles').textContent = fmtNum(res.total_bottles);
   document.getElementById('esg-plastic').textContent = res.plastic_kg_saved + 'kg';
   document.getElementById('esg-co2').textContent     = (res.total_bottles * 0.12).toFixed(1) + 'kg';
   document.getElementById('esg-points').textContent  = fmtNum(res.total_points_issued) + 'P';
 
-  const users = await apiCall('GET','/admin/users') || MOCK.users;
-  const sorted = (Array.isArray(users)?users:MOCK.users).sort((a,b)=>b.total_returns-a.total_returns).slice(0,10);
+  const usersRes = await apiCall('GET','/admin/users');
+  const users = Array.isArray(usersRes) ? usersRes : [];
+  const sorted = users.sort((a,b)=>b.total_returns-a.total_returns).slice(0,10);
   document.getElementById('esg-tbody').innerHTML = sorted.map((u,i)=>`
     <tr>
       <td style="text-align:center;font-weight:800">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>

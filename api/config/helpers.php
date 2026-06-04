@@ -38,7 +38,14 @@ function base64url(string $data): string {
 
 // ── 인증 미들웨어 ──────────────────────────────────────────
 function auth_user(): array {
-    $h = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $h = $_SERVER['HTTP_AUTHORIZATION']
+      ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+      ?? '';
+    // PHP 내장 서버 / Apache 일부 환경 폴백
+    if (!$h && function_exists('getallheaders')) {
+        $headers = array_change_key_case(getallheaders(), CASE_LOWER);
+        $h = $headers['authorization'] ?? '';
+    }
     if (!str_starts_with($h, 'Bearer ')) error('Unauthorized', 401);
     $payload = jwt_decode(substr($h, 7));
     if (!$payload) error('Token expired or invalid', 401);

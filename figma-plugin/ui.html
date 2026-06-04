@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:#0D1240; color:#fff; padding:28px 24px; min-height:220px; }
+    .logo { font-size:20px; font-weight:900; letter-spacing:.06em; margin-bottom:4px; }
+    .logo span { color:#F03E8C; }
+    .sub { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:22px; }
+    #status { font-size:13px; color:rgba(255,255,255,.7); margin-bottom:14px; min-height:20px;
+               display:flex; align-items:center; gap:8px; }
+    .dot { width:6px; height:6px; border-radius:50%; background:#F03E8C;
+           animation:pulse 1s ease infinite; flex-shrink:0; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+    .bar { background:rgba(255,255,255,.08); border-radius:100px; height:5px; overflow:hidden; }
+    .fill { height:100%; background:linear-gradient(90deg,#F03E8C,#FF6EB0);
+            border-radius:100px; transition:width .5s cubic-bezier(.23,1,.32,1); width:0%; }
+    .result { margin-top:16px; font-size:13px; font-weight:600; }
+    .done { color:#22C55E; display:flex; align-items:center; gap:6px; }
+    .err  { color:#EF4444; }
+    .hint { margin-top:12px; font-size:11px; color:rgba(255,255,255,.25); line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="logo">OBLI<span>GE</span> Design v2.1</div>
+  <div class="sub">확정 로고 · 마퀴 · 2026 트렌드 반영</div>
+  <div id="status"><div class="dot" id="dot"></div><span id="status-text">초기화 중...</span></div>
+  <div class="bar"><div class="fill" id="fill"></div></div>
+  <div id="result"></div>
+  <div class="hint" id="hint">확정 로고마크 · 밸류 마퀴 · 그라디언트 · Pill 버튼 · 2026 디자인 시스템</div>
+
+  <script>
+    let step = 0;
+    const steps = 3;
+    window.onmessage = (e) => {
+      const msg = e.data.pluginMessage;
+      if (!msg) return;
+      if (msg.type === 'progress') {
+        step++;
+        document.getElementById('status-text').textContent = msg.msg;
+        document.getElementById('fill').style.width = (step / steps * 85) + '%';
+      }
+      if (msg.type === 'done') {
+        document.getElementById('fill').style.width = '100%';
+        document.getElementById('dot').style.animation = 'none';
+        document.getElementById('dot').style.background = '#22C55E';
+        document.getElementById('status-text').textContent = '완료!';
+        document.getElementById('hint').style.display = 'none';
+        document.getElementById('result').innerHTML =
+          '<div class="done">✅ OBLIGE 디자인 v2.0이 Figma에 생성되었습니다!</div>';
+        setTimeout(() => parent.postMessage({ pluginMessage: { type:'close' } }, '*'), 2500);
+      }
+      if (msg.type === 'error') {
+        document.getElementById('dot').style.background = '#EF4444';
+        document.getElementById('dot').style.animation = 'none';
+        document.getElementById('result').innerHTML =
+          `<div class="err">❌ 오류: ${msg.msg}</div>`;
+      }
+    };
+  </script>
+</body>
+</html>

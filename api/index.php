@@ -33,6 +33,7 @@ $routes = [
     'notifications' => 'notifications/notifications.php',
     'user'          => 'user/user.php',
     'admin'         => 'admin/admin.php',
+    'figma'         => 'figma/figma.php',
 ];
 
 if (!array_key_exists($resource, $routes)) {

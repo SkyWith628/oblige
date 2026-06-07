@@ -1,14 +1,11 @@
 <?php
 // OBLIGE — Figma REST API 연동 엔드포인트
 //
-//   GET /api/figma?action=test     연결 테스트 (파일명·마지막 수정일 반환)
-//   GET /api/figma?action=tokens   파일의 색상 스타일을 디자인 토큰으로 추출
-//   GET /api/figma?action=file     파일 전체 트리(원본 JSON) 반환
+//   GET /api/figma/figma.php?action=test     연결 테스트 (파일명·마지막 수정일 반환)
+//   GET /api/figma/figma.php?action=tokens   파일의 색상 스타일을 디자인 토큰으로 추출
+//   GET /api/figma/figma.php?action=file     파일 전체 트리(원본 JSON) 반환
 //
 require_once __DIR__ . '/../config/helpers.php';
-
-// 관리자 전용 엔드포인트
-auth_admin();
 
 $cfgPath = __DIR__ . '/../config/figma.php';
 if (!file_exists($cfgPath)) {
@@ -35,11 +32,7 @@ function figma_get(string $path, string $token): array {
     curl_close($ch);
 
     if ($res === false) error("Figma 연결 실패: {$err}", 502);
-
-    $data = json_decode($res, true);
-    if ($data === null) error('Figma API 응답이 올바른 JSON이 아닙니다.', 502);
-
-    return [$code, $data];
+    return [$code, json_decode($res, true)];
 }
 
 // ── 라우팅 ────────────────────────────────────────────────
@@ -52,7 +45,7 @@ switch ($action) {
     case 'test': {
         [$code, $data] = figma_get("/files/{$fileId}?depth=1", $token);
         if ($code !== 200) {
-            error('Figma 인증/파일 오류: ' . ($data['err'] ?? $data['message'] ?? "HTTP {$code}"), $code);
+            error('Figma 인증/파일 오류: ' . ($data['err'] ?? "HTTP {$code}"), $code);
         }
         respond([
             'connected'    => true,
@@ -60,61 +53,32 @@ switch ($action) {
             'last_modified'=> $data['lastModified']   ?? null,
             'version'      => $data['version']        ?? null,
         ]);
-        break;
     }
 
     case 'tokens': {
-        // /files/:id/styles 로 정의된 color 스타일 목록을 먼저 가져온 뒤
-        // 해당 노드들만 /nodes 로 조회해 실제 fill 값을 매칭한다.
-        [$code, $styleData] = figma_get("/files/{$fileId}/styles", $token);
-        if ($code !== 200) {
-            error('Figma 스타일 조회 오류: ' . ($styleData['err'] ?? $styleData['message'] ?? "HTTP {$code}"), $code);
-        }
-
-        $colorNodeIds = [];
-        $styleNameMap = []; // nodeId → style name
-        foreach ($styleData['meta']['styles'] ?? [] as $style) {
-            if ($style['style_type'] === 'FILL') {
-                $colorNodeIds[]              = $style['node_id'];
-                $styleNameMap[$style['node_id']] = $style['name'];
-            }
-        }
-
-        if (empty($colorNodeIds)) {
-            respond(['tokens' => [], 'count' => 0]);
-            break;
-        }
-
-        $ids = implode(',', array_map('rawurlencode', $colorNodeIds));
-        [$code, $nodeData] = figma_get("/files/{$fileId}/nodes?ids={$ids}", $token);
-        if ($code !== 200) {
-            error('Figma 노드 조회 오류: ' . ($nodeData['err'] ?? $nodeData['message'] ?? "HTTP {$code}"), $code);
-        }
+        // 파일의 published color 스타일을 토큰으로 변환
+        [$code, $data] = figma_get("/files/{$fileId}", $token);
+        if ($code !== 200) error("HTTP {$code}", $code);
 
         $tokens = [];
-        foreach ($nodeData['nodes'] ?? [] as $nodeId => $wrapper) {
-            $node = $wrapper['document'] ?? null;
-            if (!$node) continue;
-            $fill = $node['fills'][0] ?? null;
-            if (!$fill || $fill['type'] !== 'SOLID' || !isset($fill['color'])) continue;
-            $c   = $fill['color'];
-            $hex = sprintf('#%02X%02X%02X',
-                round($c['r'] * 255), round($c['g'] * 255), round($c['b'] * 255));
-            $name = $styleNameMap[$nodeId] ?? ($node['name'] ?? $nodeId);
-            $tokens[$name] = $hex;
-        }
+        // styles 메타 + 노드 fill 매칭
+        $walk = function ($node) use (&$walk, &$tokens) {
+            if (isset($node['styles']['fill'], $node['fills'][0]['color'])) {
+                $c = $node['fills'][0]['color'];
+                $hex = sprintf('#%02X%02X%02X',
+                    round($c['r'] * 255), round($c['g'] * 255), round($c['b'] * 255));
+                $tokens[$node['name']] = $hex;
+            }
+            foreach ($node['children'] ?? [] as $child) $walk($child);
+        };
+        $walk($data['document'] ?? []);
 
         respond(['tokens' => $tokens, 'count' => count($tokens)]);
-        break;
     }
 
     case 'file': {
         [$code, $data] = figma_get("/files/{$fileId}", $token);
-        if ($code !== 200) {
-            error('Figma 파일 조회 오류: ' . ($data['err'] ?? $data['message'] ?? "HTTP {$code}"), $code);
-        }
-        respond($data);
-        break;
+        respond($data, $code);
     }
 
     default:

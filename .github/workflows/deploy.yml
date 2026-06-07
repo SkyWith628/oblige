@@ -1,0 +1,45 @@
+name: OBLIGE Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy-frontend:
+    name: 🌐 GitHub Pages 배포
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Supabase 설정 주입 (config.js)
+        run: |
+          sed -i "s|REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" js/config.js
+          sed -i "s|REPLACE_SUPABASE_ANON_KEY|${{ secrets.SUPABASE_ANON_KEY }}|g" js/config.js
+          echo "✅ Supabase 설정 주입 완료"
+
+      - name: GitHub Pages 설정
+        uses: actions/configure-pages@v4
+
+      - name: 정적 파일 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4

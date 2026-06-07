@@ -1,0 +1,7 @@
+// OBLIGE 설정
+// GitHub Actions 배포 시 REPLACE_* 값이 자동으로 교체됩니다.
+window.OBLIGE_CONFIG = {
+  SUPABASE_URL:      'REPLACE_SUPABASE_URL',
+  SUPABASE_ANON_KEY: 'REPLACE_SUPABASE_ANON_KEY',
+  VERSION: '2.0.0',
+};

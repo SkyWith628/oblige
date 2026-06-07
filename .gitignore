@@ -1,0 +1,42 @@
+# 환경 설정 (절대 커밋 금지)
+api/config/db.php
+api/config/figma.php
+.env
+.env.local
+
+# 의존성
+node_modules/
+vendor/
+
+# 빌드 결과
+dist/
+build/
+frontend/dist/
+
+# Vite 캐시
+.vite/
+
+# 미리보기 HTML
+*-preview.html
+
+# Supabase CLI 임시 파일
+supabase/.temp/
+
+# 업로드 이미지 (Supabase Storage로 관리)
+uploads/
+
+# 로컬 개발 도구
+.claude/
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 로그
+*.log
+error_log

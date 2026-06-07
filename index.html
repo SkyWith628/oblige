@@ -524,22 +524,128 @@
       #cursor-glow,#grain{display:none}
     }
 
+    /* ── BENTO GRID ── */
+    .bento-grid{display:grid;gap:16px}
+    .bento-card{border-radius:20px;padding:32px 28px;position:relative;overflow:hidden;
+                transition:transform .4s cubic-bezier(.23,1,.32,1),box-shadow .4s ease}
+    .bento-card:hover{transform:translateY(-6px)}
+    .bento-wide{grid-column:span 2}
+    .bento-tall{grid-row:span 2}
+
+    /* Problem bento */
+    .problem-bento{grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto}
+    .problem-bento .bento-card{background:var(--light)}
+    .problem-bento .bento-card:hover{box-shadow:0 20px 48px rgba(13,18,64,.10)}
+    .problem-bento .bento-card.accent{background:linear-gradient(135deg,var(--navy),#1a2270);color:#fff}
+    .problem-bento .bento-card.accent h3{color:#fff}
+    .problem-bento .bento-card.accent p{color:rgba(255,255,255,.55)}
+    .problem-bento .bento-card.accent .bento-stat{color:var(--pink)}
+    .bento-icon{font-size:36px;margin-bottom:16px;display:block}
+    .bento-stat{font-size:40px;font-weight:900;font-family:'Playfair Display',serif;
+                color:var(--navy);line-height:1;margin-bottom:8px;display:block}
+    .bento-stat-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+                      color:var(--pink);margin-bottom:16px;display:block}
+    .bento-card h3{font-size:16px;font-weight:800;margin-bottom:8px;line-height:1.3;color:var(--navy)}
+    .bento-card p{font-size:13px;color:var(--muted);line-height:1.65}
+
+    /* Reward bento */
+    .reward-bento{grid-template-columns:repeat(3,1fr)}
+    .reward-bento .tier-card{height:100%}
+    .reward-bento .bento-wide.tier-card{display:grid;grid-template-columns:1fr 1fr;
+                                        align-items:center;gap:32px;text-align:left;padding:40px}
+    .reward-bento .bento-wide.tier-card .tier-icon{font-size:64px;margin:0}
+    .reward-bento .bento-wide.tier-card .tier-div{margin:16px 0}
+    .reward-forest-inner{display:flex;flex-direction:column}
+
+    /* ── HAMBURGER NAV ── */
+    .nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px;
+                   color:var(--navy);font-size:22px;line-height:1;transition:color .2s;
+                   border-radius:8px}
+    .nav-hamburger:hover{background:rgba(13,18,64,.06)}
+    nav.nav-dark .nav-hamburger{color:#fff}
+    nav.nav-dark .nav-hamburger:hover{background:rgba(255,255,255,.08)}
+
     /* ── RESPONSIVE ── */
     @media(max-width:900px){
-      nav{padding:0 20px}.nav-links{gap:14px}
-      section{padding:72px 20px}#hero{padding:100px 20px 72px}
-      .product-grid,.reward-tiers{grid-template-columns:repeat(2,1fr)}
+      nav{padding:0 20px}
+      section{padding:72px 20px}
+      #hero{padding:100px 20px 72px}
+      /* Brand 2열 → 1열 */
+      #brand > div{grid-template-columns:1fr !important;gap:40px !important}
+      .product-grid{grid-template-columns:repeat(2,1fr)}
+      .reward-bento{grid-template-columns:1fr 1fr}
+      .reward-bento .bento-wide{grid-column:span 2}
+      .reward-bento .bento-wide.tier-card{grid-template-columns:auto 1fr}
+      .reward-bento .bento-tall{grid-row:span 1}
+      .problem-bento{grid-template-columns:1fr 1fr}
+      .problem-bento .bento-wide{grid-column:span 2}
       .cycle-steps{grid-template-columns:repeat(2,1fr)}.cycle-line{display:none}
       .recycle-grid,.camp-inner{grid-template-columns:1fr;gap:48px}
       .pd-grid{grid-template-columns:1fr}
       .pd-img{border-radius:20px 20px 0 0;min-height:220px;font-size:64px}
       .footer-top{grid-template-columns:1fr 1fr}
+      .marquee-item{font-size:20px;padding:0 24px}
+      .bento-stat{font-size:32px}
+      /* 모달 모바일 */
+      .modal-sm,.modal-md,.modal-lg{max-width:calc(100vw - 32px)}
+    }
+    @media(max-width:768px){
+      /* 햄버거 메뉴 활성화 */
+      .nav-hamburger{display:flex;align-items:center;justify-content:center}
+      .nav-links{
+        display:none;flex-direction:column;align-items:stretch;gap:0;
+        position:absolute;top:72px;left:0;right:0;
+        background:rgba(255,255,255,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+        padding:8px 20px 24px;border-bottom:1px solid rgba(13,18,64,.08);
+        box-shadow:0 16px 40px rgba(13,18,64,.1)
+      }
+      nav.nav-dark .nav-links{background:rgba(13,18,64,.97);border-color:rgba(255,255,255,.08)}
+      .nav-links.open{display:flex}
+      .nav-links > li{width:100%}
+      .nav-links > li > a{
+        display:block;padding:14px 0;font-size:15px;letter-spacing:.04em;text-transform:uppercase;
+        border-bottom:1px solid rgba(13,18,64,.07);color:var(--navy)
+      }
+      nav.nav-dark .nav-links > li > a{color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.08)}
+      .nav-links > li > a::after{display:none}
+      /* 아이콘·버튼 행 */
+      .nav-links > li:has(.nav-icon-btn),
+      .nav-links > li:has(.nav-btn){
+        border-bottom:none;padding-top:12px
+      }
+      .nav-btn{width:100%;text-align:center;padding:12px}
+      .nav-icon-btn{padding:10px 0}
     }
     @media(max-width:560px){
-      .product-grid,.reward-tiers{grid-template-columns:1fr}
-      .footer-top{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:12px;text-align:center}
+      nav{padding:0 16px}
+      section{padding:56px 16px}
+      #hero{padding:88px 16px 56px}
+      .product-grid{grid-template-columns:1fr}
+      .reward-bento,.problem-bento{grid-template-columns:1fr}
+      .reward-bento .bento-wide,.reward-bento .bento-tall,
+      .problem-bento .bento-wide{grid-column:span 1;grid-row:span 1}
+      .reward-bento .bento-wide.tier-card{grid-template-columns:auto 1fr}
+      .cycle-steps{grid-template-columns:1fr;gap:24px}
+      .camp-stats{grid-template-columns:1fr 1fr}
+      .footer-top{grid-template-columns:1fr}
+      .footer-bottom{flex-direction:column;gap:12px;text-align:center}
       .mp-stats{grid-template-columns:1fr 1fr}
       .hero-btns{flex-direction:column;width:fit-content}
+      .sec-title{font-size:clamp(26px,8vw,40px)}
+      .sec-body{font-size:15px;max-width:100%}
+      .bento-stat{font-size:28px}
+      .stat-num{font-size:28px}
+      .tier-name{font-size:20px}
+      .marquee-item{font-size:18px;padding:0 18px}
+      /* 모달 풀너비 */
+      .modal{border-radius:20px 20px 0 0}
+      .overlay{align-items:flex-end;padding:0}
+      .modal-sm,.modal-md,.modal-lg{max-width:100vw;width:100%}
+      /* 제품 상세 모달 */
+      .pd-grid{grid-template-columns:1fr}
+      .pd-img{min-height:200px;font-size:56px}
+      .pd-info{padding:24px 20px}
+      .cart-body,.auth-body,.mypage-body{padding:28px 20px}
     }
   </style>
 </head>
@@ -576,6 +682,7 @@
       <path d="M78.6595 2.38194V2.86402L74.6806 8.76949H74.1986L70.7001 6.38588V5.9038L71.5371 4.66177V2.93767L63.8824 14.2933V16.0174L66.4937 12.1139H66.9757L70.4742 14.4975V14.9796L67.8127 18.9584H67.3306L63.8573 16.6016H62.3374L60.7405 18.9584H60.2584L56.7617 16.5765V16.0944L67.6085 0H68.0905L71.5622 2.35683H73.0837L74.6806 0H75.1627L78.6611 2.38194H78.6595ZM70.2699 7.24793L73.7684 9.63154V10.1136L71.3848 13.6372H70.9027L67.4042 11.2535V10.7715L69.7879 7.24793H70.2699Z" fill="currentColor"/>
     </svg>
   </a>
+  <button class="nav-hamburger" id="nav-hamburger" onclick="toggleNav()" aria-label="메뉴">☰</button>
   <ul class="nav-links" id="nav">
     <li><a onclick="scrollSec('#brand')">Brand</a></li>
     <li><a onclick="scrollSec('#products')">Product</a></li>
@@ -592,6 +699,9 @@
     </li>
     <li id="nav-user" style="display:none">
       <button class="nav-btn outline" onclick="openMypage()">마이페이지</button>
+    </li>
+    <li id="nav-admin" style="display:none">
+      <button class="nav-btn" onclick="location.href='admin.html'">관리자 페이지</button>
     </li>
   </ul>
 </nav>
@@ -662,26 +772,34 @@
 <section style="background:var(--white)">
   <p class="sec-label">Why OBLIGE</p>
   <h2 class="sec-title">우리가 바꾸고자 하는 문제</h2>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px" id="problems">
-    <div style="background:var(--light);border-radius:8px;padding:28px 24px">
-      <div style="font-size:32px;margin-bottom:16px">🧴</div>
-      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px">플라스틱 용기 증가</h3>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6">매년 수십억 개의 화장품 플라스틱 용기가 환경에 버려지고 있습니다.</p>
+  <div class="bento-grid problem-bento" style="margin-top:48px" id="problems" data-reveal>
+    <!-- 넓은 카드: 통계 강조 -->
+    <div class="bento-card bento-wide accent" data-reveal>
+      <span class="bento-stat">140억+</span>
+      <span class="bento-stat-label">매년 버려지는 화장품 용기 수</span>
+      <span class="bento-icon">🧴</span>
+      <h3>플라스틱 용기 증가</h3>
+      <p>매년 수십억 개의 화장품 플라스틱 용기가 환경에 버려지고 있습니다.</p>
     </div>
-    <div style="background:var(--light);border-radius:8px;padding:28px 24px">
-      <div style="font-size:32px;margin-bottom:16px">📦</div>
-      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px">과대포장 · 단기 소비</h3>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6">불필요한 패키징과 빠른 소비 사이클이 폐기물을 가속화합니다.</p>
+    <!-- 일반 카드 -->
+    <div class="bento-card" data-reveal>
+      <span class="bento-icon">📦</span>
+      <h3>과대포장 · 단기 소비</h3>
+      <p>불필요한 패키징과 빠른 소비 사이클이 폐기물을 가속화합니다.</p>
     </div>
-    <div style="background:var(--light);border-radius:8px;padding:28px 24px">
-      <div style="font-size:32px;margin-bottom:16px">♻️</div>
-      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px">복합 소재 재활용 어려움</h3>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6">다양한 소재 결합 용기는 일반 재활용 과정에서 걸러지지 않습니다.</p>
+    <!-- 일반 카드 -->
+    <div class="bento-card" data-reveal>
+      <span class="bento-icon">♻️</span>
+      <h3>복합 소재 재활용 어려움</h3>
+      <p>다양한 소재 결합 용기는 일반 재활용 과정에서 걸러지지 않습니다.</p>
     </div>
-    <div style="background:var(--light);border-radius:8px;padding:28px 24px">
-      <div style="font-size:32px;margin-bottom:16px">🌱</div>
-      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px">원료 · 생산 환경 부담</h3>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6">동물 성분과 화학 원료가 생태계에 미치는 부정적 영향을 줄여야 합니다.</p>
+    <!-- 넓은 카드: 통계 강조 -->
+    <div class="bento-card bento-wide accent" data-reveal>
+      <span class="bento-stat">72%</span>
+      <span class="bento-stat-label">동물 유래 원료 사용 비율 (글로벌)</span>
+      <span class="bento-icon">🌱</span>
+      <h3>원료 · 생산 환경 부담</h3>
+      <p>동물 성분과 화학 원료가 생태계에 미치는 부정적 영향을 줄여야 합니다.</p>
     </div>
   </div>
 </section>
@@ -741,11 +859,41 @@
   <p class="sec-label">Reward Program</p>
   <h2 class="sec-title">회원 등급 시스템</h2>
   <p class="sec-body">공병을 반납할수록 등급이 올라가고, 더 많은 혜택이 주어집니다.</p>
-  <div class="reward-tiers">
-    <div class="tier-card"><div class="tier-icon">🌱</div><div class="tier-name">Seed</div><div class="tier-cond">가입 회원</div><div class="tier-div"></div><div class="tier-benefit">기본 포인트 적립<br />회원 전용 뉴스레터</div></div>
-    <div class="tier-card"><div class="tier-icon">🍃</div><div class="tier-name">Leaf</div><div class="tier-cond">공병 3개 반납</div><div class="tier-div"></div><div class="tier-benefit">추가 포인트 +10%<br />신제품 우선 구매</div></div>
-    <div class="tier-card featured"><div class="tier-icon">🌳</div><div class="tier-name">Tree</div><div class="tier-cond">공병 7개 반납</div><div class="tier-div"></div><div class="tier-benefit">친환경 굿즈 제공<br />포인트 +20%<br />리필 할인 쿠폰</div></div>
-    <div class="tier-card"><div class="tier-icon">🌲</div><div class="tier-name">Forest</div><div class="tier-cond">공병 15개 이상</div><div class="tier-div"></div><div class="tier-benefit">리필 무료 혜택<br />한정 상품 우선 제공<br />앰배서더 자격</div></div>
+  <div class="bento-grid reward-bento" style="margin-top:64px">
+    <!-- Row 1: Seed, Leaf, Tree(tall featured) -->
+    <div class="tier-card" data-reveal>
+      <div class="tier-icon">🌱</div>
+      <div class="tier-name">Seed</div>
+      <div class="tier-cond">가입 회원</div>
+      <div class="tier-div"></div>
+      <div class="tier-benefit">기본 포인트 적립<br />회원 전용 뉴스레터</div>
+    </div>
+    <div class="tier-card" data-reveal>
+      <div class="tier-icon">🍃</div>
+      <div class="tier-name">Leaf</div>
+      <div class="tier-cond">공병 3개 반납</div>
+      <div class="tier-div"></div>
+      <div class="tier-benefit">추가 포인트 +10%<br />신제품 우선 구매</div>
+    </div>
+    <!-- Tree: tall, featured, spans 2 rows -->
+    <div class="tier-card featured bento-tall" data-reveal style="display:flex;flex-direction:column;justify-content:center">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--pink);margin-bottom:16px">Most Popular</div>
+      <div class="tier-icon">🌳</div>
+      <div class="tier-name">Tree</div>
+      <div class="tier-cond">공병 7개 반납</div>
+      <div class="tier-div"></div>
+      <div class="tier-benefit">친환경 굿즈 제공<br />포인트 +20%<br />리필 할인 쿠폰</div>
+    </div>
+    <!-- Row 2: Forest wide (spans 2 cols) -->
+    <div class="tier-card bento-wide" data-reveal style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:32px;text-align:left;padding:40px">
+      <div class="tier-icon" style="font-size:64px;margin:0">🌲</div>
+      <div class="reward-forest-inner">
+        <div class="tier-name">Forest</div>
+        <div class="tier-cond">공병 15개 이상</div>
+        <div class="tier-div" style="margin:16px 0"></div>
+        <div class="tier-benefit">리필 무료 혜택<br />한정 상품 우선 제공<br />앰배서더 자격</div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -754,8 +902,8 @@
   <div class="camp-inner">
     <div>
       <p class="sec-label">ESG Campaign</p>
-      <h2 class="sec-title">함께 만드는<br />지속가능한 변화</h2>
-      <p class="sec-body">OBLIGE 캠페인에 참여하고, SNS에 인증하면 추가 리워드와 함께 환경 변화의 주인공이 됩니다.</p>
+      <h2 class="sec-title" id="campaign-title">함께 만드는<br />지속가능한 변화</h2>
+      <p class="sec-body" id="campaign-body">OBLIGE 캠페인에 참여하고, SNS에 인증하면 추가 리워드와 함께 환경 변화의 주인공이 됩니다.</p>
       <div class="camp-stats">
         <div class="stat-box"><div class="stat-num" data-count="12400" data-suffix="+">0</div><div class="stat-lbl">누적 공병 반납 수</div></div>
         <div class="stat-box"><div class="stat-num" data-count="3200" data-suffix="+">0</div><div class="stat-lbl">캠페인 참여 회원</div></div>
@@ -763,10 +911,10 @@
         <div class="stat-box"><div class="stat-num" data-count="2" data-suffix=".4t">0</div><div class="stat-lbl">절감된 플라스틱</div></div>
       </div>
     </div>
-    <div class="camp-box">
-      <h3>공병 반납 챌린지에<br />참여하세요</h3>
-      <p>SNS에 #OBLIGE공병반납 태그와 함께 인증샷을 올리면 특별 포인트와 굿즈를 드립니다.</p>
-      <button class="btn-primary" onclick="openAuth()">캠페인 참여하기</button>
+    <div class="camp-box" id="campaign-card">
+      <h3 id="campaign-card-title">공병 반납 챌린지에<br />참여하세요</h3>
+      <p id="campaign-card-body">SNS에 #OBLIGE공병반납 태그와 함께 인증샷을 올리면 특별 포인트와 굿즈를 드립니다.</p>
+      <button class="btn-primary" id="campaign-join-btn" onclick="joinActiveCampaign()">캠페인 참여하기</button>
       <div class="camp-tags">
         <span class="camp-tag">#OBLIGE공병반납</span>
         <span class="camp-tag">#비건코스메틱</span>
@@ -932,6 +1080,7 @@ let state = {
   token:    localStorage.getItem('oblige_token'),
   cart:     [],
   products: [],
+  activeCampaign: null,
 };
 
 // ══ API HELPER ════════════════════════════════════════════════
@@ -971,7 +1120,20 @@ function toast(msg, type='info') {
 
 // ══ SCROLL / NAV ══════════════════════════════════════════════
 function scrollTop() { window.scrollTo({top:0,behavior:'smooth'}); }
-function scrollSec(sel) { document.querySelector(sel)?.scrollIntoView({behavior:'smooth'}); }
+function scrollSec(sel) {
+  document.querySelector(sel)?.scrollIntoView({behavior:'smooth'});
+  // 모바일 메뉴 닫기
+  document.getElementById('nav')?.classList.remove('open');
+  document.getElementById('nav-hamburger').textContent = '☰';
+}
+
+function toggleNav() {
+  const menu = document.getElementById('nav');
+  const btn = document.getElementById('nav-hamburger');
+  const isOpen = menu.classList.toggle('open');
+  btn.textContent = isOpen ? '✕' : '☰';
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
 
 // ══ OVERLAY ══════════════════════════════════════════════════
 function openOverlay(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
@@ -1012,7 +1174,9 @@ async function doLogin() {
     state.user  = res.user;
     localStorage.setItem('oblige_token', res.token);
     localStorage.setItem('oblige_user', JSON.stringify(res.user));
+    if (res.user.role === 'ADMIN') localStorage.setItem('oblige_admin_token', res.token);
     updateNavAuth();
+    loadCart();
     closeOverlay('auth-overlay');
     toast(`환영합니다, ${res.user.name}님! ${res.user.grade_icon} ${res.user.grade_name}`, 'success');
   } else {
@@ -1055,6 +1219,8 @@ async function doRegister() {
 function doLogout() {
   state.user = null; state.token = null; state.cart = [];
   localStorage.removeItem('oblige_token');
+  localStorage.removeItem('oblige_user');
+  localStorage.removeItem('oblige_admin_token');
   updateNavAuth(); updateCartBadge();
   toast('로그아웃 되었습니다');
 }
@@ -1062,6 +1228,7 @@ function doLogout() {
 function updateNavAuth() {
   document.getElementById('nav-auth').style.display = state.user ? 'none' : '';
   document.getElementById('nav-user').style.display = state.user ? '' : 'none';
+  document.getElementById('nav-admin').style.display = state.user?.role === 'ADMIN' ? '' : 'none';
 }
 
 // ══ PRODUCTS ══════════════════════════════════════════════════
@@ -1069,7 +1236,7 @@ async function loadProducts() {
   const grid = document.getElementById('product-grid');
   grid.innerHTML = '<div class="skeleton" style="height:340px;border-radius:10px"></div>'.repeat(4);
 
-  const res = await apiCall('GET', '/products', null, false);
+  const res = await apiCall('GET', '/products?featured=1', null, false);
   if (!res || res.error || !Array.isArray(res)) {
     grid.innerHTML = `<p style="color:var(--muted);padding:40px;grid-column:1/-1;text-align:center">
       ⚠️ 상품을 불러올 수 없습니다. 서버 연결을 확인해주세요.<br>
@@ -1138,15 +1305,21 @@ function openProduct(id) {
 }
 
 // ══ CART ══════════════════════════════════════════════════════
-function addToCart(productId) {
+async function addToCart(productId) {
   if (!state.user) { toast('로그인 후 이용할 수 있습니다', 'info'); openAuth(); return; }
   const p = state.products.find(x=>x.product_id===productId);
   if (!p) return;
-  const existing = state.cart.find(x=>x.product_id===productId);
-  if (existing) { existing.quantity++; }
-  else { state.cart.push({ product_id:productId, product_name:p.product_name, price:p.price, quantity:1, emoji:p.emoji||'🌿' }); }
+  const res = await apiCall('POST', '/cart', {product_id:productId, quantity:1});
+  if (res?.error || !res) { toast(res?.error || '장바구니 저장에 실패했습니다', 'error'); return; }
+  await loadCart();
+  toast(`${p.product_name} 장바구니에 담겼습니다`, 'success');
+}
+
+async function loadCart() {
+  if (!state.user) { state.cart = []; updateCartBadge(); return; }
+  const res = await apiCall('GET', '/cart');
+  state.cart = Array.isArray(res?.items) ? res.items : [];
   updateCartBadge();
-  toast(`${p.product_name} 장바구니에 담겼습니다 🛒`, 'success');
 }
 
 function updateCartBadge() {
@@ -1156,7 +1329,9 @@ function updateCartBadge() {
   badge.style.display = total > 0 ? 'flex' : 'none';
 }
 
-function openCart() {
+async function openCart() {
+  if (!state.user) { toast('로그인 후 이용할 수 있습니다', 'info'); openAuth(); return; }
+  await loadCart();
   renderCart();
   openOverlay('cart-overlay');
 }
@@ -1167,21 +1342,21 @@ function renderCart() {
     el.innerHTML = `<div class="empty-state"><div class="icon">🛒</div><p>장바구니가 비어있습니다</p></div>`;
     return;
   }
-  const total = state.cart.reduce((s,i)=>s+(i.price*i.quantity), 0);
+  const total = state.cart.reduce((s,i)=>s+(Number(i.price)*Number(i.quantity)), 0);
   const shipping = total >= 50000 ? 0 : 3000;
-  el.innerHTML = state.cart.map((item,idx) => `
+  el.innerHTML = state.cart.map(item => `
     <div class="cart-item-row">
-      <div class="cart-thumb">${item.emoji}</div>
+      <div class="cart-thumb">${item.main_image ? `<img src="${item.main_image}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '🌿'}</div>
       <div>
         <div class="cart-name">${item.product_name}</div>
         <div class="cart-sub">₩${item.price.toLocaleString()} × ${item.quantity} = ₩${(item.price*item.quantity).toLocaleString()}</div>
       </div>
       <div>
         <div class="qty-ctrl">
-          <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+          <button class="qty-btn" onclick="changeQty(${item.cart_item_id},${item.quantity},-1)">−</button>
           <span style="font-weight:700;min-width:24px;text-align:center">${item.quantity}</span>
-          <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
-          <button class="qty-btn" style="color:#ef4444;border-color:#ef4444" onclick="removeCart(${idx})">×</button>
+          <button class="qty-btn" onclick="changeQty(${item.cart_item_id},${item.quantity},1)">+</button>
+          <button class="qty-btn" style="color:#ef4444;border-color:#ef4444" onclick="removeCart(${item.cart_item_id})">×</button>
         </div>
       </div>
     </div>
@@ -1191,29 +1366,82 @@ function renderCart() {
       <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:12px"><span>배송비</span><span>${shipping===0?'<span style="color:var(--success)">무료</span>':'₩'+shipping.toLocaleString()}</span></div>
       <div class="cart-total-row"><span>최종 결제</span><span style="color:var(--pink)">₩${(total+shipping).toLocaleString()}</span></div>
     </div>
-    <button class="btn-primary" style="width:100%;margin-top:16px" onclick="checkout()">주문하기</button>
+    <div style="background:var(--off);padding:18px;border-radius:8px;margin-top:16px">
+      <div class="form-group"><label class="form-label">받는 분</label><input class="form-input" id="co-name" value="${state.user?.name||''}"></div>
+      <div class="form-group"><label class="form-label">연락처</label><input class="form-input" id="co-phone" placeholder="010-0000-0000"></div>
+      <div class="form-group"><label class="form-label">배송 주소</label><input class="form-input" id="co-address" placeholder="배송 받을 주소"></div>
+      <div class="form-group"><label class="form-label">상세 주소</label><input class="form-input" id="co-detail" placeholder="상세 주소"></div>
+      <div class="form-group"><label class="form-label">사용 포인트 (보유 ${Number(state.user?.total_point||0).toLocaleString()}P)</label><input class="form-input" type="number" min="0" max="${state.user?.total_point||0}" value="0" id="co-point"></div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:16px" onclick="checkout()">주문 확정</button>
   `;
 }
 
-function changeQty(idx, delta) {
-  state.cart[idx].quantity += delta;
-  if (state.cart[idx].quantity < 1) state.cart.splice(idx, 1);
-  updateCartBadge(); renderCart();
+async function changeQty(cartItemId, current, delta) {
+  const quantity = Number(current) + delta;
+  if (quantity < 1) return removeCart(cartItemId);
+  const res = await apiCall('PATCH', `/cart/${cartItemId}`, {quantity});
+  if (res?.error || !res) { toast(res?.error || '수량 변경에 실패했습니다', 'error'); return; }
+  await loadCart(); renderCart();
 }
 
-function removeCart(idx) { state.cart.splice(idx, 1); updateCartBadge(); renderCart(); }
+async function removeCart(cartItemId) {
+  const res = await apiCall('DELETE', `/cart/${cartItemId}`);
+  if (res?.error || !res) { toast(res?.error || '삭제에 실패했습니다', 'error'); return; }
+  await loadCart(); renderCart();
+}
 
 async function checkout() {
   if (!state.user) { openAuth(); return; }
-  // 실제 서버 연동 시 orderApi.create() 호출
-  toast('주문이 완료되었습니다! 결제 시스템 연동 예정 🎉', 'success');
-  state.cart = []; updateCartBadge();
+  const body = {
+    from_cart: true,
+    receiver_name: document.getElementById('co-name')?.value.trim(),
+    receiver_phone: document.getElementById('co-phone')?.value.trim(),
+    shipping_address: document.getElementById('co-address')?.value.trim(),
+    detail_address: document.getElementById('co-detail')?.value.trim(),
+    used_point: Number(document.getElementById('co-point')?.value || 0),
+  };
+  if (!body.receiver_name || !body.receiver_phone || !body.shipping_address) {
+    toast('받는 분, 연락처, 배송 주소를 입력해주세요', 'error'); return;
+  }
+  const res = await apiCall('POST', '/orders', body);
+  if (res?.error || !res) { toast(res?.error || '주문에 실패했습니다', 'error'); return; }
+  toast(`주문이 완료되었습니다. 주문번호 ${res.order_number}`, 'success');
+  await loadCart();
+  const me = await apiCall('GET', '/auth/me');
+  if (me && !me.error) state.user = me;
   closeOverlay('cart-overlay');
 }
 
+// ══ CAMPAIGN ═════════════════════════════════════════════════
+async function loadCampaigns() {
+  const res = await apiCall('GET', '/campaigns', null, false);
+  if (!Array.isArray(res) || !res.length) return;
+  const campaign = res[0];
+  state.activeCampaign = campaign;
+  document.getElementById('campaign-title').textContent = campaign.title;
+  document.getElementById('campaign-body').textContent = campaign.content || campaign.mission_desc || '';
+  document.getElementById('campaign-card-title').textContent = campaign.title;
+  document.getElementById('campaign-card-body').textContent =
+    `${campaign.mission_desc || '캠페인 미션에 참여해주세요'} · 승인 시 ${Number(campaign.reward_point).toLocaleString()}P`;
+}
+
+async function joinActiveCampaign() {
+  if (!state.user) { toast('로그인 후 참여할 수 있습니다', 'info'); openAuth(); return; }
+  if (!state.activeCampaign) { toast('현재 참여 가능한 캠페인이 없습니다', 'info'); return; }
+  const snsUrl = prompt('캠페인 인증 SNS URL을 입력해주세요');
+  if (!snsUrl) return;
+  const res = await apiCall('POST', `/campaigns/${state.activeCampaign.campaign_id}/join`, {sns_url:snsUrl});
+  if (res?.error || !res) { toast(res?.error || '캠페인 참여 신청에 실패했습니다', 'error'); return; }
+  toast('캠페인 참여 신청이 완료되었습니다', 'success');
+}
+
 // ══ MYPAGE ════════════════════════════════════════════════════
-function openMypage(tab='overview') {
+async function openMypage(tab='overview') {
   if (!state.user) { openAuth(); return; }
+  const res = await apiCall('GET', '/user/mypage');
+  if (res?.error || !res) { toast(res?.error || '마이페이지를 불러오지 못했습니다', 'error'); return; }
+  state.user = {...state.user, ...res};
   renderMypage(tab);
   openOverlay('mp-overlay');
 }
@@ -1255,10 +1483,46 @@ function renderMypage(tab='overview') {
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
         <button class="btn-navy btn-sm" onclick="closeOverlay('mp-overlay');openReturnModal()">공병 반납 신청</button>
-        <button class="btn-primary btn-sm" onclick="closeOverlay('mp-overlay');openCart()">장바구니 보기</button>
+        <button class="btn-primary btn-sm" onclick="requestRefill()">리필 신청</button>
       </div>
+
+      <div class="mp-section-title" style="margin-top:28px">최근 주문</div>
+      ${(u.recent_orders||[]).length ? u.recent_orders.map(o=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--light);font-size:13px">
+          <div><strong>${o.order_number}</strong><br><span style="color:var(--muted)">${o.created_at.slice(0,10)} · ${o.order_status}</span></div>
+          <div style="text-align:right"><strong>₩${Number(o.final_price).toLocaleString()}</strong>
+          ${['ORDERED','PAID'].includes(o.order_status) ? `<br><button class="btn-outline btn-sm" style="margin-top:5px" onclick="cancelOrder(${o.order_id})">주문 취소</button>` : ''}</div>
+        </div>`).join('') : '<p style="font-size:13px;color:var(--muted)">주문 내역이 없습니다.</p>'}
+
+      <div class="mp-section-title" style="margin-top:28px">최근 공병 반납</div>
+      ${(u.recent_returns||[]).length ? u.recent_returns.map(r=>`
+        <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--light);font-size:13px">
+          <div><strong>${r.return_number}</strong><br><span style="color:var(--muted)">${r.created_at.slice(0,10)} · ${r.return_status}</span></div>
+          <strong style="color:var(--pink)">${Number(r.total_point).toLocaleString()}P</strong>
+        </div>`).join('') : '<p style="font-size:13px;color:var(--muted)">반납 내역이 없습니다.</p>'}
     </div>
   `;
+}
+
+async function cancelOrder(orderId) {
+  if (!confirm('주문을 취소하시겠습니까? 재고와 사용 포인트가 복원됩니다.')) return;
+  const res = await apiCall('PATCH', `/orders/${orderId}/cancel`, {});
+  if (res?.error || !res) { toast(res?.error || '주문 취소에 실패했습니다', 'error'); return; }
+  toast('주문이 취소되었습니다', 'success');
+  openMypage();
+}
+
+async function requestRefill() {
+  const refillable = state.products.filter(p=>p.is_refillable);
+  if (!refillable.length) { toast('현재 리필 가능한 상품이 없습니다', 'info'); return; }
+  const choices = refillable.map(p=>`${p.product_id}: ${p.product_name}`).join('\n');
+  const productId = Number(prompt(`리필할 상품 ID를 입력해주세요.\n${choices}`));
+  if (!refillable.some(p=>Number(p.product_id)===productId)) return;
+  const shippingAddress = prompt('리필 제품을 받을 배송 주소를 입력해주세요');
+  if (!shippingAddress) return;
+  const res = await apiCall('POST', '/refill', {product_id:productId, shipping_address:shippingAddress});
+  if (res?.error || !res) { toast(res?.error || '리필 신청에 실패했습니다', 'error'); return; }
+  toast('리필 신청이 완료되었습니다', 'success');
 }
 
 // ══ RETURN MODAL ══════════════════════════════════════════════
@@ -1347,6 +1611,7 @@ async function submitReturn() {
 // ══ INIT ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
+  loadCampaigns();
 
   // 토큰이 있으면 /auth/me 로 사용자 정보 복원
   if (state.token) {
@@ -1355,6 +1620,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.user = res;
         localStorage.setItem('oblige_user', JSON.stringify(res));
         updateNavAuth();
+        loadCart();
       } else {
         // 토큰 만료 or 서버 오류 → 로그아웃 처리
         state.token = null;

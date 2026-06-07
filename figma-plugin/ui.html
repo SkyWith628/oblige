@@ -3,59 +3,173 @@
 <head>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:#0D1240; color:#fff; padding:28px 24px; min-height:220px; }
-    .logo { font-size:20px; font-weight:900; letter-spacing:.06em; margin-bottom:4px; }
-    .logo span { color:#F03E8C; }
-    .sub { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:22px; }
-    #status { font-size:13px; color:rgba(255,255,255,.7); margin-bottom:14px; min-height:20px;
-               display:flex; align-items:center; gap:8px; }
-    .dot { width:6px; height:6px; border-radius:50%; background:#F03E8C;
-           animation:pulse 1s ease infinite; flex-shrink:0; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-    .bar { background:rgba(255,255,255,.08); border-radius:100px; height:5px; overflow:hidden; }
-    .fill { height:100%; background:linear-gradient(90deg,#F03E8C,#FF6EB0);
-            border-radius:100px; transition:width .5s cubic-bezier(.23,1,.32,1); width:0%; }
-    .result { margin-top:16px; font-size:13px; font-weight:600; }
-    .done { color:#22C55E; display:flex; align-items:center; gap:6px; }
-    .err  { color:#EF4444; }
-    .hint { margin-top:12px; font-size:11px; color:rgba(255,255,255,.25); line-height:1.6; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:#0D1240;color:#fff;padding:0;min-height:320px;overflow:hidden}
+
+    /* ── 헤더 ── */
+    .header{padding:24px 24px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .logo{font-size:18px;font-weight:900;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+    .logo-mark{display:flex;gap:3px;align-items:flex-end}
+    .logo-bar{width:4px;border-radius:2px;background:linear-gradient(to top,#F03E8C,#FF6EB0)}
+    .logo-bar:nth-child(1){height:14px}
+    .logo-bar:nth-child(2){height:10px}
+    .logo-bar:nth-child(3){height:7px;opacity:.55}
+    .logo em{color:#F03E8C;font-style:normal}
+    .version{font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.3);
+             background:rgba(255,255,255,.06);padding:3px 8px;border-radius:100px;margin-left:4px}
+
+    /* ── 바디 ── */
+    .body{padding:20px 24px}
+    .desc{font-size:11px;color:rgba(255,255,255,.35);line-height:1.6;margin-bottom:18px}
+
+    /* ── 스텝 리스트 ── */
+    .steps{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+    .step{display:flex;align-items:center;gap:10px;padding:10px 12px;
+          border-radius:12px;background:rgba(255,255,255,.04);
+          border:1px solid rgba(255,255,255,.06);transition:all .3s}
+    .step.active{background:rgba(240,62,140,.08);border-color:rgba(240,62,140,.2)}
+    .step.done{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.15)}
+    .step-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;
+               justify-content:center;font-size:13px;flex-shrink:0;
+               background:rgba(255,255,255,.06);transition:all .3s}
+    .step.active .step-icon{background:rgba(240,62,140,.2)}
+    .step.done .step-icon{background:rgba(34,197,94,.15)}
+    .step-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);flex:1;transition:color .3s}
+    .step.active .step-label{color:rgba(255,255,255,.9)}
+    .step.done .step-label{color:rgba(255,255,255,.5)}
+    .step-check{font-size:12px;opacity:0;transition:opacity .3s}
+    .step.done .step-check{opacity:1}
+
+    /* ── 진행 바 ── */
+    .progress-wrap{margin-top:4px}
+    .progress-label{display:flex;justify-content:space-between;margin-bottom:6px}
+    .progress-label span{font-size:10px;color:rgba(255,255,255,.3)}
+    .bar{background:rgba(255,255,255,.06);border-radius:100px;height:4px;overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,#F03E8C,#FF6EB0);
+          border-radius:100px;transition:width .6s cubic-bezier(.23,1,.32,1);width:0%}
+
+    /* ── 완료/에러 ── */
+    .result{display:none;padding:16px;border-radius:14px;margin-top:14px;text-align:center}
+    .result.done-state{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);display:block}
+    .result.err-state{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);display:block}
+    .result-icon{font-size:28px;margin-bottom:8px}
+    .result-msg{font-size:13px;font-weight:600}
+    .done-state .result-msg{color:#22C55E}
+    .err-state .result-msg{color:#EF4444}
+    .result-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px;line-height:1.5}
   </style>
 </head>
 <body>
-  <div class="logo">OBLI<span>GE</span> Design v2.1</div>
-  <div class="sub">확정 로고 · 마퀴 · 2026 트렌드 반영</div>
-  <div id="status"><div class="dot" id="dot"></div><span id="status-text">초기화 중...</span></div>
-  <div class="bar"><div class="fill" id="fill"></div></div>
-  <div id="result"></div>
-  <div class="hint" id="hint">확정 로고마크 · 밸류 마퀴 · 그라디언트 · Pill 버튼 · 2026 디자인 시스템</div>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-bar"></div>
+        <div class="logo-bar"></div>
+        <div class="logo-bar"></div>
+      </div>
+      OBLI<em>GE</em>
+      <span class="version">v3.0</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="desc">Bento Grid · 모바일 프레임 · 2026 디자인 시스템</div>
+
+    <div class="steps">
+      <div class="step" id="s0">
+        <div class="step-icon">🎨</div>
+        <div class="step-label">컬러 & 폰트 스타일</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step" id="s1">
+        <div class="step-icon">🖥️</div>
+        <div class="step-label">메인 페이지 (데스크톱)</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step" id="s2">
+        <div class="step-icon">📱</div>
+        <div class="step-label">모바일 프레임 (375px)</div>
+        <div class="step-check">✓</div>
+      </div>
+      <div class="step" id="s3">
+        <div class="step-icon">🛠️</div>
+        <div class="step-label">관리자 대시보드 & 컴포넌트</div>
+        <div class="step-check">✓</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-text">준비 중...</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-icon" id="result-icon"></div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+  </div>
 
   <script>
-    let step = 0;
-    const steps = 3;
+    // step index → UI 요소 ID 매핑
+    // progress msg: 'colors' | 'main' | 'mobile' | 'admin'
+    const stepMap = { colors:0, main:1, mobile:2, admin:3 };
+    let currentStep = -1;
+
+    function setStep(idx, state) { // state: 'active' | 'done'
+      const el = document.getElementById('s'+idx);
+      if (!el) return;
+      el.classList.remove('active','done');
+      el.classList.add(state);
+    }
+
+    const pcts = { colors:15, main:50, mobile:75, admin:95 };
+
     window.onmessage = (e) => {
       const msg = e.data.pluginMessage;
       if (!msg) return;
+
       if (msg.type === 'progress') {
-        step++;
-        document.getElementById('status-text').textContent = msg.msg;
-        document.getElementById('fill').style.width = (step / steps * 85) + '%';
+        const key = msg.key || 'colors';
+        const idx = stepMap[key] ?? 0;
+
+        // 이전 스텝 완료 처리
+        for (let i = 0; i < idx; i++) setStep(i, 'done');
+        setStep(idx, 'active');
+        currentStep = idx;
+
+        const pct = pcts[key] || 10;
+        document.getElementById('fill').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = msg.msg;
+        document.getElementById('progress-pct').textContent = pct + '%';
       }
+
       if (msg.type === 'done') {
+        // 모든 스텝 완료
+        for (let i = 0; i <= 3; i++) setStep(i, 'done');
         document.getElementById('fill').style.width = '100%';
-        document.getElementById('dot').style.animation = 'none';
-        document.getElementById('dot').style.background = '#22C55E';
-        document.getElementById('status-text').textContent = '완료!';
-        document.getElementById('hint').style.display = 'none';
-        document.getElementById('result').innerHTML =
-          '<div class="done">✅ OBLIGE 디자인 v2.0이 Figma에 생성되었습니다!</div>';
-        setTimeout(() => parent.postMessage({ pluginMessage: { type:'close' } }, '*'), 2500);
+        document.getElementById('progress-pct').textContent = '100%';
+        document.getElementById('progress-text').textContent = '생성 완료!';
+
+        const r = document.getElementById('result');
+        r.className = 'result done-state';
+        document.getElementById('result-icon').textContent = '✅';
+        document.getElementById('result-msg').textContent = 'OBLIGE 디자인 v3.0 생성 완료';
+        document.getElementById('result-sub').textContent =
+          '데스크톱 · 모바일 · 관리자 대시보드\nBento Grid 레이아웃 포함';
+
+        setTimeout(() => parent.postMessage({ pluginMessage:{ type:'close' }}, '*'), 3000);
       }
+
       if (msg.type === 'error') {
-        document.getElementById('dot').style.background = '#EF4444';
-        document.getElementById('dot').style.animation = 'none';
-        document.getElementById('result').innerHTML =
-          `<div class="err">❌ 오류: ${msg.msg}</div>`;
+        const r = document.getElementById('result');
+        r.className = 'result err-state';
+        document.getElementById('result-icon').textContent = '❌';
+        document.getElementById('result-msg').textContent = '오류 발생';
+        document.getElementById('result-sub').textContent = msg.msg;
       }
     };
   </script>

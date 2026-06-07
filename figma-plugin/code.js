@@ -367,6 +367,84 @@ async function buildMainPage() {
 
   y += 560;
 
+  // ── PROBLEM — BENTO GRID ─────────────────────────────────
+  // Layout:
+  //   [140억+ wide navy 2col] [과대포장 1col]
+  //   [재활용 1col] [72% wide navy 2col]
+  const prob = mkFrame(root, { x:0, y, w:W, h:580,
+    fill:solid(C.white), name:'PROBLEM — 우리가 바꾸고자 하는 문제 (Bento)' });
+
+  const probLabel = mkFrame(prob, { x:56, y:56, w:260, h:20, name:'prob-label' });
+  mkRect(probLabel, { x:0, y:8, w:24, h:1.5, fill:solid(C.pink) });
+  await mkText(probLabel, { x:32, y:0, content:'WHY OBLIGE', size:11,
+    style:'Bold', color:C.pink, letterSpacing:14 });
+  await mkText(prob, { x:56, y:84, content:'우리가 바꾸고자 하는 문제', size:40,
+    family:'Playfair Display', style:'Bold', color:C.navy });
+
+  // 그리드 파라미터
+  const PG = { x:56, gridY:160, gap:14 };
+  const pColW = Math.floor((W - 112 - PG.gap * 2) / 3); // ~437
+  const pRowH = 170;
+  const pRow2Y = PG.gridY + pRowH + PG.gap;
+  const pWideW = pColW * 2 + PG.gap;
+
+  // ① 플라스틱 (wide navy, col1-2, row1)
+  const p1 = mkFrame(prob, { x:PG.x, y:PG.gridY, w:pWideW, h:pRowH,
+    fill:grad(C.navy, C.navyM, 135), radius:20, name:'prob-plastic (wide)' });
+  mkRect(p1, { x:0, y:0, w:pWideW, h:pRowH,
+    fill: radGrad(0.05, 0.3, 0.7, 0.7, C.pink, 0.15, C.pink, 0),
+    radius:20, name:'p1-glow' });
+  // stat
+  await mkText(p1, { x:28, y:20, content:'140억+', size:36,
+    family:'Playfair Display', style:'Bold', color:C.pink });
+  await mkText(p1, { x:28, y:62, content:'매년 버려지는 화장품 용기 수', size:11,
+    style:'Bold', color:C.pink, letterSpacing:6, opacity:0.8 });
+  await mkText(p1, { x:28, y:88, content:'🧴', size:24 });
+  await mkText(p1, { x:28, y:120, content:'플라스틱 용기 증가', size:14,
+    style:'Extra Bold', color:C.white });
+  await mkText(p1, { x:28, y:144, w:pWideW-56,
+    content:'매년 수십억 개의 화장품 플라스틱 용기가 환경에 버려지고 있습니다.', size:11,
+    style:'Regular', color:C.white, lineH:17, opacity:0.55 });
+
+  // ② 과대포장 (col3, row1)
+  const p2 = mkFrame(prob, { x:PG.x + pWideW + PG.gap, y:PG.gridY, w:pColW, h:pRowH,
+    fill:solid(C.light), radius:20, name:'prob-packaging' });
+  await mkText(p2, { x:24, y:24, content:'📦', size:28 });
+  await mkText(p2, { x:24, y:68, content:'과대포장 · 단기 소비', size:13,
+    style:'Extra Bold', color:C.navy, lineH:20 });
+  await mkText(p2, { x:24, y:100, w:pColW-48,
+    content:'불필요한 패키징과 빠른 소비 사이클이 폐기물을 가속화합니다.', size:11,
+    style:'Regular', color:C.muted, lineH:17 });
+
+  // ③ 재활용 어려움 (col1, row2)
+  const p3 = mkFrame(prob, { x:PG.x, y:pRow2Y, w:pColW, h:pRowH,
+    fill:solid(C.light), radius:20, name:'prob-recycle' });
+  await mkText(p3, { x:24, y:24, content:'♻️', size:28 });
+  await mkText(p3, { x:24, y:68, content:'복합 소재 재활용 어려움', size:13,
+    style:'Extra Bold', color:C.navy, lineH:20 });
+  await mkText(p3, { x:24, y:100, w:pColW-48,
+    content:'다양한 소재 결합 용기는 일반 재활용 과정에서 걸러지지 않습니다.', size:11,
+    style:'Regular', color:C.muted, lineH:17 });
+
+  // ④ 원료 부담 (wide navy, col2-3, row2)
+  const p4 = mkFrame(prob, { x:PG.x + pColW + PG.gap, y:pRow2Y, w:pWideW, h:pRowH,
+    fill:grad(C.navy, C.navyM, 135), radius:20, name:'prob-ingredients (wide)' });
+  mkRect(p4, { x:0, y:0, w:pWideW, h:pRowH,
+    fill: radGrad(0.85, 0.3, 0.7, 0.7, C.pink, 0.15, C.pink, 0),
+    radius:20, name:'p4-glow' });
+  await mkText(p4, { x:28, y:20, content:'72%', size:36,
+    family:'Playfair Display', style:'Bold', color:C.pink });
+  await mkText(p4, { x:28, y:62, content:'동물 유래 원료 사용 비율 (글로벌)', size:11,
+    style:'Bold', color:C.pink, letterSpacing:6, opacity:0.8 });
+  await mkText(p4, { x:28, y:88, content:'🌱', size:24 });
+  await mkText(p4, { x:28, y:120, content:'원료 · 생산 환경 부담', size:14,
+    style:'Extra Bold', color:C.white });
+  await mkText(p4, { x:28, y:144, w:pWideW-56,
+    content:'동물 성분과 화학 원료가 생태계에 미치는 부정적 영향을 줄여야 합니다.', size:11,
+    style:'Regular', color:C.white, lineH:17, opacity:0.55 });
+
+  y += 580;
+
   // ── SOLUTION (ESG) ──────────────────────────────────────
   const sol = mkFrame(root, { x:0, y, w:W, h:560,
     fill:grad(C.navyD, C.navy, 160), name:'SOLUTION — ESG 순환 시스템' });
@@ -518,9 +596,12 @@ async function buildMainPage() {
 
   y += 640;
 
-  // ── REWARD ────────────────────────────────────────────
-  const reward = mkFrame(root, { x:0, y, w:W, h:600,
-    fill:solid(C.off), name:'REWARD — 등급 시스템' });
+  // ── REWARD — BENTO GRID ──────────────────────────────
+  // Layout: 3-col bento
+  //   [Seed] [Leaf] [Tree★ tall]
+  //   [Forest wide──────] [Tree★]
+  const reward = mkFrame(root, { x:0, y, w:W, h:680,
+    fill:solid(C.off), name:'REWARD — 등급 시스템 (Bento)' });
 
   const rwLabel = mkFrame(reward, { x:56, y:80, w:240, h:20, name:'rw-label' });
   mkRect(rwLabel, { x:0, y:8, w:24, h:1.5, fill:solid(C.pink) });
@@ -532,46 +613,80 @@ async function buildMainPage() {
     content:'공병을 반납할수록 등급이 올라가고, 더 많은 혜택이 주어집니다.',
     size:17, style:'Regular', color:C.muted });
 
-  const tiers = [
-    { icon:'🌱', name:'Seed',   cond:'가입 회원',      benefit:'기본 포인트 적립\n회원 전용 뉴스레터', featured:false },
-    { icon:'🍃', name:'Leaf',   cond:'공병 3개 반납',  benefit:'추가 포인트 +10%\n신제품 우선 구매',   featured:false },
-    { icon:'🌳', name:'Tree',   cond:'공병 7개 반납',  benefit:'친환경 굿즈 제공\n포인트 +20%\n리필 할인 쿠폰', featured:true },
-    { icon:'🌲', name:'Forest', cond:'공병 15개 이상', benefit:'리필 무료 혜택\n한정 상품 우선 제공\n앰배서더 자격', featured:false },
-  ];
+  // 그리드 파라미터
+  const BG = { x:56, y:228, gap:16, colW:417 }; // 3-col: (1328-32)/3 ≈ 432
+  const colW = Math.floor((W - 112 - BG.gap * 2) / 3); // ~437
+  const rowH1 = 220, rowH2 = 200;
+  const row2Y = BG.y + rowH1 + BG.gap;
 
-  for (let i = 0; i < tiers.length; i++) {
-    const t = tiers[i];
-    const tx = 56 + i * 334;
-    const cardFill = t.featured ? grad(C.navy, C.navyM, 160) : solid(C.white);
-    const tc = mkFrame(reward, { x:tx, y:228, w:310, h:332,
-      fill:cardFill, radius:24, name:`tier-${t.name}` });
+  // ① Seed — col1 row1
+  const seedCard = mkFrame(reward, { x:BG.x, y:BG.y, w:colW, h:rowH1,
+    fill:solid(C.white), radius:20, name:'tier-Seed' });
+  seedCard.strokes = [{ type:'SOLID', color:C.navy, opacity:0.06 }];
+  seedCard.strokeWeight = 1.5;
+  await mkText(seedCard, { x:28, y:28, content:'🌱', size:36 });
+  await mkText(seedCard, { x:28, y:78, content:'Seed', size:22,
+    family:'Playfair Display', style:'Bold', color:C.navy });
+  await mkText(seedCard, { x:28, y:110, content:'가입 회원', size:12,
+    style:'Regular', color:C.muted });
+  mkRect(seedCard, { x:28, y:136, w:32, h:2, fill:grad(C.pink, C.pink2, 0), radius:2 });
+  await mkText(seedCard, { x:28, y:150, w:colW-56,
+    content:'기본 포인트 적립\n회원 전용 뉴스레터', size:12, style:'Semi Bold', color:C.navy, lineH:20 });
 
-    // border for non-featured
-    if (!t.featured) {
-      tc.strokes = [{ type:'SOLID', color:C.navy, opacity:0.06 }];
-      tc.strokeWeight = 1.5;
-    } else {
-      // glow overlay
-      mkRect(tc, { x:0, y:0, w:310, h:332,
-        fill: radGrad(0.1, 0.2, 0.8, 0.6, C.pink, 0.15, C.pink, 0),
-        radius:24, name:'featured-glow' });
-    }
+  // ② Leaf — col2 row1
+  const leafCard = mkFrame(reward, { x:BG.x + colW + BG.gap, y:BG.y, w:colW, h:rowH1,
+    fill:solid(C.white), radius:20, name:'tier-Leaf' });
+  leafCard.strokes = [{ type:'SOLID', color:C.navy, opacity:0.06 }];
+  leafCard.strokeWeight = 1.5;
+  await mkText(leafCard, { x:28, y:28, content:'🍃', size:36 });
+  await mkText(leafCard, { x:28, y:78, content:'Leaf', size:22,
+    family:'Playfair Display', style:'Bold', color:C.navy });
+  await mkText(leafCard, { x:28, y:110, content:'공병 3개 반납', size:12,
+    style:'Regular', color:C.muted });
+  mkRect(leafCard, { x:28, y:136, w:32, h:2, fill:grad(C.pink, C.pink2, 0), radius:2 });
+  await mkText(leafCard, { x:28, y:150, w:colW-56,
+    content:'추가 포인트 +10%\n신제품 우선 구매', size:12, style:'Semi Bold', color:C.navy, lineH:20 });
 
-    const textC  = t.featured ? C.white : C.navy;
-    const mutedC = t.featured ? { r:1, g:1, b:1 } : C.muted;
-    await mkText(tc, { x:130, y:30, content:t.icon, size:44 });
-    await mkText(tc, { x:0, y:90, w:310, content:t.name, size:24,
-      family:'Playfair Display', style:'Bold', color:textC, align:'CENTER' });
-    await mkText(tc, { x:0, y:124, w:310, content:t.cond, size:13,
-      style:'Regular', color:mutedC, align:'CENTER', opacity:t.featured?0.5:0.7 });
-    // divider
-    mkRect(tc, { x:135, y:152, w:40, h:2,
-      fill:grad(C.pink, C.pink2, 0), radius:2, name:'tier-div' });
-    await mkText(tc, { x:20, y:166, w:270, content:t.benefit, size:13,
-      style:'Semi Bold', color:textC, align:'CENTER', lineH:24 });
-  }
+  // ③ Tree (featured, tall — spans row1+row2) — col3
+  const treeH = rowH1 + BG.gap + rowH2;
+  const treeCard = mkFrame(reward, { x:BG.x + (colW + BG.gap)*2, y:BG.y, w:colW, h:treeH,
+    fill:grad(C.navy, C.navyM, 160), radius:20, name:'tier-Tree ★' });
+  mkRect(treeCard, { x:0, y:0, w:colW, h:treeH,
+    fill: radGrad(0.1, 0.2, 0.8, 0.6, C.pink, 0.18, C.pink, 0),
+    radius:20, name:'tree-glow' });
+  // Most Popular badge
+  const popularBadge = mkFrame(treeCard, { x:24, y:24, w:110, h:26,
+    fill:solidA(C.pink, 0.2), radius:100, name:'popular-badge' });
+  await mkText(popularBadge, { x:14, y:6, content:'Most Popular', size:10,
+    style:'Bold', color:C.pink, letterSpacing:6 });
+  await mkText(treeCard, { x:28, y:72, content:'🌳', size:44 });
+  await mkText(treeCard, { x:0, y:132, w:colW, content:'Tree', size:26,
+    family:'Playfair Display', style:'Bold', color:C.white, align:'CENTER' });
+  await mkText(treeCard, { x:0, y:168, w:colW, content:'공병 7개 반납', size:12,
+    style:'Regular', color:C.white, align:'CENTER', opacity:0.5 });
+  mkRect(treeCard, { x:colW/2-20, y:198, w:40, h:2,
+    fill:grad(C.pink, C.pink2, 0), radius:2 });
+  await mkText(treeCard, { x:20, y:214, w:colW-40,
+    content:'친환경 굿즈 제공\n포인트 +20%\n리필 할인 쿠폰', size:13,
+    style:'Semi Bold', color:C.white, align:'CENTER', lineH:24 });
 
-  y += 600;
+  // ④ Forest (wide — spans col1+col2, row2)
+  const forestW = colW * 2 + BG.gap;
+  const forestCard = mkFrame(reward, { x:BG.x, y:row2Y, w:forestW, h:rowH2,
+    fill:solid(C.white), radius:20, name:'tier-Forest' });
+  forestCard.strokes = [{ type:'SOLID', color:C.navy, opacity:0.06 }];
+  forestCard.strokeWeight = 1.5;
+  await mkText(forestCard, { x:28, y:32, content:'🌲', size:56 });
+  await mkText(forestCard, { x:120, y:32, content:'Forest', size:28,
+    family:'Playfair Display', style:'Bold', color:C.navy });
+  await mkText(forestCard, { x:120, y:70, content:'공병 15개 이상', size:13,
+    style:'Regular', color:C.muted });
+  mkRect(forestCard, { x:120, y:98, w:32, h:2, fill:grad(C.pink, C.pink2, 0), radius:2 });
+  await mkText(forestCard, { x:120, y:112, w:forestW-148,
+    content:'리필 무료 혜택 · 한정 상품 우선 제공 · 앰배서더 자격', size:13,
+    style:'Semi Bold', color:C.navy, lineH:22 });
+
+  y += 680;
 
   // ── CAMPAIGN ────────────────────────────────────────────
   const camp = mkFrame(root, { x:0, y, w:W, h:600,
@@ -886,6 +1001,226 @@ async function buildAdminPage() {
   return root;
 }
 
+// ══════════════════════════════════════════════════════════
+// 모바일 프레임 (375px)
+// ══════════════════════════════════════════════════════════
+async function buildMobilePage() {
+  const MW = 375;
+  let my = 0;
+  const root = mkFrame(null, { x:1600, y:0, w:MW, h:5400,
+    fill:solid(C.white), name:'📱 OBLIGE — 모바일 (375px)' });
+  figma.currentPage.appendChild(root);
+
+  // ── MOBILE NAV ──
+  const nav = mkFrame(root, { x:0, y:0, w:MW, h:60,
+    fill:solidA(C.white, 0.92), name:'M-NAV' });
+  mkRect(nav, { x:0, y:59, w:MW, h:1, fill:solidA(C.navy, 0.06) });
+  const logoF = mkFrame(nav, { x:16, y:16, w:100, h:28, name:'m-logo' });
+  mkLogoMark(logoF, { x:0, y:2, size:22 });
+  await mkText(logoF, { x:30, y:1, content:'OBLI', size:18, style:'Extra Bold', color:C.navy });
+  await mkText(logoF, { x:75, y:1, content:'GE', size:18, style:'Extra Bold', color:C.pink });
+  // 햄버거
+  const hamBtn = mkFrame(nav, { x:MW-52, y:12, w:36, h:36,
+    fill:[], radius:8, name:'hamburger-btn' });
+  for (let i=0; i<3; i++) {
+    mkRect(hamBtn, { x:6, y:8+i*9, w:24, h:2.5,
+      fill:solid(C.navy), radius:2, name:`ham-line-${i}` });
+  }
+  my = 60;
+
+  // ── MOBILE HERO ──
+  const hero = mkFrame(root, { x:0, y:my, w:MW, h:680,
+    fill:solid(C.navy), name:'M-HERO' });
+  mkRect(hero, { x:0, y:0, w:MW, h:680,
+    fill: radGrad(0.8, 0.1, 0.8, 0.6, C.pink, 0.22, C.pink, 0), name:'m-hero-glow' });
+  mkCircle(hero, { x:MW-160, y:-60, d:280,
+    fill: radGrad(0, 0, 1, 1, C.pink, 1, C.pink, 0), opacity:0.28 });
+  // badge
+  const mBadge = mkFrame(hero, { x:16, y:64, w:250, h:32,
+    fill:solidA(C.pink, 0.08), radius:100, name:'m-hero-badge',
+    stroke:[{ type:'SOLID', color:C.pink, opacity:0.35 }], strokeW:1 });
+  await mkText(mBadge, { x:12, y:8, content:'● VEGAN · ESG COSMETICS',
+    size:9, style:'Bold', color:C.pink, letterSpacing:8 });
+  await mkText(hero, { x:16, y:110, content:'Return\nBeauty,', size:52,
+    family:'Playfair Display', style:'Bold', color:C.white, lineH:52, name:'m-hero-t1' });
+  await mkText(hero, { x:16, y:220, content:'Refill Value.', size:52,
+    family:'Playfair Display', style:'Bold', color:C.pink, lineH:52, name:'m-hero-t2' });
+  await mkText(hero, { x:16, y:288, w:MW-32,
+    content:'공병을 반납하고, 지속가능한 아름다움을 채우다.',
+    size:14, style:'Regular', color:C.white, lineH:22, opacity:0.55 });
+  // 버튼
+  const mBtn1 = mkFrame(hero, { x:16, y:352, w:MW-32, h:52,
+    fill:grad(C.pink, C.pink2, 135), radius:100, name:'m-btn-primary' });
+  await mkText(mBtn1, { x:0, y:15, w:MW-32, content:'공병 반납하기',
+    size:14, style:'Bold', color:C.white, align:'CENTER' });
+  const mBtn2 = mkFrame(hero, { x:16, y:416, w:MW-32, h:52,
+    fill:solidA(C.white, 0.06), radius:100, name:'m-btn-outline',
+    stroke:[{ type:'SOLID', color:C.white, opacity:0.25 }], strokeW:1.5 });
+  await mkText(mBtn2, { x:0, y:15, w:MW-32, content:'비건 제품 보러가기',
+    size:14, style:'Bold', color:C.white, align:'CENTER' });
+  my += 680;
+
+  // ── MOBILE MARQUEE ──
+  const mmq = mkFrame(root, { x:0, y:my, w:MW, h:64, fill:solid(C.navy), name:'M-MARQUEE' });
+  mkRect(mmq, { x:0, y:0, w:MW, h:1, fill:solidA(C.white, 0.06) });
+  mkRect(mmq, { x:0, y:63, w:MW, h:1, fill:solidA(C.white, 0.06) });
+  const mItems2 = ['Vegan Beauty','Zero Waste','Circular ESG','Cruelty Free'];
+  let mmx = 16;
+  for (const item of mItems2) {
+    await mkText(mmq, { x:mmx, y:18, content:item, size:18,
+      family:'Playfair Display', style:'Bold', color:C.white, opacity:0.8 });
+    mmx += item.length * 11 + 24;
+    const dot2 = figma.createEllipse();
+    dot2.resize(6,6); dot2.x=mmx; dot2.y=29; dot2.fills=grad(C.pink,C.pink2,135);
+    mmq.appendChild(dot2); mmx += 22;
+  }
+  my += 64;
+
+  // ── MOBILE BRAND ──
+  const mbrand = mkFrame(root, { x:0, y:my, w:MW, h:460, fill:solid(C.off), name:'M-BRAND' });
+  const mbLabel = mkFrame(mbrand, { x:16, y:40, w:180, h:20, name:'m-brand-label' });
+  mkRect(mbLabel, { x:0, y:8, w:20, h:1.5, fill:solid(C.pink) });
+  await mkText(mbLabel, { x:28, y:0, content:'BRAND STORY', size:10, style:'Bold', color:C.pink, letterSpacing:12 });
+  await mkText(mbrand, { x:16, y:68, content:'책임 있는\n아름다움을\n제안하다', size:34,
+    family:'Playfair Display', style:'Bold', color:C.navy, lineH:38 });
+  await mkText(mbrand, { x:16, y:202, w:MW-32,
+    content:'OBLIGE는 사회적 책임과 지속가능한 소비를 의미하는 브랜드입니다. 화장품 공병을 회수·재사이클링하는 친환경 비건 코스메틱 플랫폼.',
+    size:14, style:'Regular', color:C.muted, lineH:22 });
+  const mChips = ['Clean','Vegan','Refill'];
+  let mcx = 16;
+  for (const chip of mChips) {
+    const mcw = chip.length * 8 + 36;
+    const mcf = mkFrame(mbrand, { x:mcx, y:340, w:mcw, h:34,
+      fill:[], radius:100, name:`m-chip-${chip}`,
+      stroke:[{ type:'SOLID', color:C.navy, opacity:0.2 }], strokeW:1.5 });
+    await mkText(mcf, { x:12, y:9, content:chip.toUpperCase(), size:10,
+      style:'Bold', color:C.navy, letterSpacing:8 });
+    mcx += mcw + 8;
+  }
+  my += 460;
+
+  // ── MOBILE PROBLEM BENTO ──
+  const mprob = mkFrame(root, { x:0, y:my, w:MW, h:740, fill:solid(C.white), name:'M-PROBLEM (Bento)' });
+  const mpLabel = mkFrame(mprob, { x:16, y:40, w:180, h:20, name:'mp-label' });
+  mkRect(mpLabel, { x:0, y:8, w:20, h:1.5, fill:solid(C.pink) });
+  await mkText(mpLabel, { x:28, y:0, content:'WHY OBLIGE', size:10, style:'Bold', color:C.pink, letterSpacing:12 });
+  await mkText(mprob, { x:16, y:68, content:'우리가 바꾸고자\n하는 문제', size:28,
+    family:'Playfair Display', style:'Bold', color:C.navy, lineH:34 });
+
+  const mpCards = [
+    { stat:'140억+', statLabel:'매년 버려지는 화장품 용기', emoji:'🧴', title:'플라스틱 용기 증가',
+      desc:'매년 수십억 개의 용기가 환경에 버려집니다.', navy:true },
+    { emoji:'📦', title:'과대포장 · 단기 소비',
+      desc:'불필요한 패키징이 폐기물을 가속화합니다.', navy:false },
+    { emoji:'♻️', title:'복합 소재 재활용 어려움',
+      desc:'결합 소재 용기는 일반 재활용에서 걸러지지 않습니다.', navy:false },
+    { stat:'72%', statLabel:'동물 유래 원료 사용 비율', emoji:'🌱', title:'원료 · 생산 환경 부담',
+      desc:'동물 성분과 화학 원료의 생태계 영향을 줄여야 합니다.', navy:true },
+  ];
+  let mpy = 152;
+  for (const pc of mpCards) {
+    const mpcH = pc.navy ? 148 : 120;
+    const mpc = mkFrame(mprob, { x:16, y:mpy, w:MW-32, h:mpcH,
+      fill: pc.navy ? grad(C.navy, C.navyM, 135) : solid(C.light),
+      radius:16, name:`m-prob-${pc.title}` });
+    if (pc.navy) {
+      mkRect(mpc, { x:0, y:0, w:MW-32, h:mpcH,
+        fill: radGrad(0.1, 0.3, 0.8, 0.6, C.pink, 0.15, C.pink, 0),
+        radius:16, name:'mp-glow' });
+      await mkText(mpc, { x:20, y:14, content:pc.stat, size:28,
+        family:'Playfair Display', style:'Bold', color:C.pink });
+      await mkText(mpc, { x:20, y:48, content:pc.statLabel, size:10,
+        style:'Bold', color:C.pink, letterSpacing:6, opacity:0.8 });
+      await mkText(mpc, { x:20, y:70, content:pc.emoji, size:20 });
+      await mkText(mpc, { x:20, y:96, content:pc.title, size:13,
+        style:'Extra Bold', color:C.white });
+      await mkText(mpc, { x:20, y:116, w:MW-72, content:pc.desc, size:11,
+        style:'Regular', color:C.white, lineH:16, opacity:0.55 });
+    } else {
+      await mkText(mpc, { x:20, y:16, content:pc.emoji, size:24 });
+      await mkText(mpc, { x:20, y:50, content:pc.title, size:13,
+        style:'Extra Bold', color:C.navy });
+      await mkText(mpc, { x:20, y:72, w:MW-72, content:pc.desc, size:11,
+        style:'Regular', color:C.muted, lineH:16 });
+    }
+    mpy += mpcH + 12;
+  }
+  my += 740;
+
+  // ── MOBILE REWARD BENTO ──
+  const mrw = mkFrame(root, { x:0, y:my, w:MW, h:780, fill:solid(C.off), name:'M-REWARD (Bento)' });
+  const mrwLabel = mkFrame(mrw, { x:16, y:40, w:200, h:20, name:'mrw-label' });
+  mkRect(mrwLabel, { x:0, y:8, w:20, h:1.5, fill:solid(C.pink) });
+  await mkText(mrwLabel, { x:28, y:0, content:'REWARD PROGRAM', size:10, style:'Bold', color:C.pink, letterSpacing:12 });
+  await mkText(mrw, { x:16, y:68, content:'회원 등급 시스템', size:28,
+    family:'Playfair Display', style:'Bold', color:C.navy });
+
+  const mTiers = [
+    { icon:'🌱', name:'Seed', cond:'가입 회원', benefit:'기본 포인트 적립 · 뉴스레터', featured:false },
+    { icon:'🍃', name:'Leaf', cond:'공병 3개 반납', benefit:'포인트 +10% · 신제품 우선 구매', featured:false },
+    { icon:'🌳', name:'Tree ★', cond:'공병 7개 반납', benefit:'굿즈 제공 · 포인트 +20% · 리필 쿠폰', featured:true },
+    { icon:'🌲', name:'Forest', cond:'공병 15개 이상', benefit:'리필 무료 · 한정 상품 · 앰배서더', featured:false },
+  ];
+  let mty = 120;
+  for (const mt of mTiers) {
+    const mth = mt.featured ? 148 : 112;
+    const mtc = mkFrame(mrw, { x:16, y:mty, w:MW-32, h:mth,
+      fill: mt.featured ? grad(C.navy, C.navyM, 160) : solid(C.white),
+      radius:16, name:`m-tier-${mt.name}` });
+    if (!mt.featured) {
+      mtc.strokes = [{ type:'SOLID', color:C.navy, opacity:0.06 }];
+      mtc.strokeWeight = 1.5;
+    } else {
+      mkRect(mtc, { x:0, y:0, w:MW-32, h:mth,
+        fill: radGrad(0.1, 0.2, 0.8, 0.6, C.pink, 0.15, C.pink, 0),
+        radius:16, name:'mt-glow' });
+      const popB = mkFrame(mtc, { x:20, y:16, w:100, h:24,
+        fill:solidA(C.pink, 0.2), radius:100, name:'popular' });
+      await mkText(popB, { x:12, y:5, content:'Most Popular', size:9, style:'Bold', color:C.pink, letterSpacing:4 });
+    }
+    const tc2 = mt.featured ? C.white : C.navy;
+    const mc2 = mt.featured ? C.white : C.muted;
+    const toff = mt.featured ? 48 : 16;
+    await mkText(mtc, { x:20, y:toff, content:mt.icon, size:28 });
+    await mkText(mtc, { x:64, y:toff+2, content:mt.name, size:18,
+      family:'Playfair Display', style:'Bold', color:tc2 });
+    await mkText(mtc, { x:64, y:toff+28, content:mt.cond, size:11,
+      style:'Regular', color:mc2, opacity:0.6 });
+    mkRect(mtc, { x:20, y:toff+52, w:28, h:2, fill:grad(C.pink, C.pink2, 0), radius:2 });
+    await mkText(mtc, { x:20, y:toff+64, w:MW-72, content:mt.benefit, size:12,
+      style:'Semi Bold', color:tc2, lineH:18 });
+    mty += mth + 12;
+  }
+  my += 780;
+
+  // 모바일 푸터
+  const mfooter = mkFrame(root, { x:0, y:my, w:MW, h:240, fill:solid(C.navyD), name:'M-FOOTER' });
+  mkLogoMark(mfooter, { x:16, y:36, size:24 });
+  await mkText(mfooter, { x:48, y:38, content:'OBLIGE', size:20,
+    family:'Playfair Display', style:'Bold', color:C.pink });
+  await mkText(mfooter, { x:16, y:76, w:MW-32,
+    content:'비건 화장품 구매부터 공병 반납, ESG까지\n연결하는 코스메틱 플랫폼.',
+    size:12, style:'Regular', color:C.white, lineH:19, opacity:0.35 });
+  mkRect(mfooter, { x:16, y:140, w:MW-32, h:1, fill:solidA(C.white, 0.06) });
+  await mkText(mfooter, { x:0, y:160, w:MW,
+    content:'© 2026 OBLIGE. All rights reserved.', size:11,
+    style:'Regular', color:C.white, align:'CENTER', opacity:0.2 });
+  const mFtags = ['VEGAN','ESG','CRUELTY FREE'];
+  let mftx = MW/2 - 130;
+  for (const ft of mFtags) {
+    const ftw = ft.length * 7 + 24;
+    const ftf = mkFrame(mfooter, { x:mftx, y:188, w:ftw, h:26,
+      fill:[], radius:100, name:`mftag-${ft}`,
+      stroke:[{ type:'SOLID', color:C.white, opacity:0.1 }], strokeW:1 });
+    await mkText(ftf, { x:8, y:6, content:ft, size:9, style:'Bold',
+      color:C.white, opacity:0.3, letterSpacing:6 });
+    mftx += ftw + 8;
+  }
+
+  root.resize(MW, my + 240 + 40);
+  return root;
+}
+
 // ── 모달 컴포넌트 (참고용) ───────────────────────────────
 async function buildComponents() {
   const W = 480;
@@ -935,16 +1270,19 @@ async function buildComponents() {
 
 // ── 실행 ────────────────────────────────────────────────
 (async () => {
-  figma.showUI(__html__, { width:420, height:220 });
+  figma.showUI(__html__, { width:440, height:340 });
 
   try {
-    figma.ui.postMessage({ type:'progress', msg:'컬러 & 폰트 스타일 생성 중...' });
+    figma.ui.postMessage({ type:'progress', key:'colors', msg:'컬러 & 폰트 스타일 생성 중...' });
     await createColorStyles();
 
-    figma.ui.postMessage({ type:'progress', msg:'메인 페이지 생성 중... (시간이 걸릴 수 있습니다)' });
+    figma.ui.postMessage({ type:'progress', key:'main', msg:'메인 페이지 생성 중... (Bento Grid 포함)' });
     const mainFrame = await buildMainPage();
 
-    figma.ui.postMessage({ type:'progress', msg:'관리자 대시보드 & 컴포넌트 생성 중...' });
+    figma.ui.postMessage({ type:'progress', key:'mobile', msg:'모바일 프레임 생성 중... (375px)' });
+    await buildMobilePage();
+
+    figma.ui.postMessage({ type:'progress', key:'admin', msg:'관리자 대시보드 & 컴포넌트 생성 중...' });
     await buildAdminPage();
     await buildComponents();
 

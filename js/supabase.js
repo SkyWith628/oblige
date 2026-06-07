@@ -30,7 +30,8 @@
   ================================================================ */
   window.apiCall = async function apiCall(method, path, body = null) {
     try {
-      return await _dispatch(method, path.replace(/^\//, ''), body);
+      const cleanPath = path.replace(/\?.*$/, '').replace(/^\//, '');
+      return await _dispatch(method, cleanPath, body);
     } catch (e) {
       console.error('[apiCall]', method, path, e.message);
       return { error: e.message };

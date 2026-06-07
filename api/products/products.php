@@ -12,6 +12,10 @@ $id     = $GLOBALS['ID'];
 $action = $GLOBALS['ACTION'];
 $seg    = $GLOBALS['SEG'];
 
+// PATCH /api/products/:id/images/:imgId/main  대표 이미지 변경
+$imgId  = isset($seg[3]) ? (int)$seg[3] : 0;
+$imgAct = $seg[4] ?? null;   // 'main'
+
 match (true) {
     $method === 'GET'    && $id === null => list_products(),
     $method === 'GET'    && $id !== null && $action === null => get_product($id),
@@ -19,7 +23,8 @@ match (true) {
     $method === 'PUT'    && $id !== null && $action === null => update_product($id),
     $method === 'DELETE' && $id !== null && $action === null => delete_product($id),
     $method === 'POST'   && $id !== null && $action === 'images' => upload_image($id),
-    $method === 'DELETE' && $id !== null && $action === 'images' => delete_image($id, (int)($seg[3] ?? 0)),
+    $method === 'DELETE' && $id !== null && $action === 'images' && $imgId > 0 => delete_image($id, $imgId),
+    $method === 'PATCH'  && $id !== null && $action === 'images' && $imgId > 0 && $imgAct === 'main' => set_main_image($id, $imgId),
     default => error('Not found', 404),
 };
 
@@ -212,4 +217,23 @@ function delete_image(int $productId, int $imageId): void {
             ->execute([$productId]);
     }
     respond(['message' => '이미지가 삭제되었습니다']);
+}
+
+// PATCH /api/products/:id/images/:imgId/main — 대표 이미지 변경
+function set_main_image(int $productId, int $imageId): void {
+    auth_admin();
+    $pdo = db();
+
+    // 해당 이미지가 이 상품 것인지 확인
+    $check = $pdo->prepare("SELECT image_id FROM product_images WHERE image_id = ? AND product_id = ?");
+    $check->execute([$imageId, $productId]);
+    if (!$check->fetch()) error('이미지를 찾을 수 없습니다', 404);
+
+    // 기존 대표 해제 후 새 대표 지정 (트랜잭션)
+    $pdo->beginTransaction();
+    $pdo->prepare("UPDATE product_images SET is_main = 0 WHERE product_id = ?")->execute([$productId]);
+    $pdo->prepare("UPDATE product_images SET is_main = 1 WHERE image_id = ?")->execute([$imageId]);
+    $pdo->commit();
+
+    respond(['message' => '대표 이미지가 변경되었습니다', 'image_id' => $imageId]);
 }

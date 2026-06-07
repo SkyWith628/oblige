@@ -539,15 +539,27 @@
         <label class="form-label">상품 설명</label>
         <textarea class="form-textarea" id="pm-desc" placeholder="상품 설명을 입력하세요"></textarea>
       </div>
-      <!-- 이미지 업로드 (수정 모드에서만 표시) -->
-      <div id="pm-img-section" style="display:none">
-        <label class="form-label">상품 이미지</label>
-        <div id="pm-img-list" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px"></div>
-        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border:2px dashed var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);transition:.2s" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--border)'">
+      <!-- 이미지 업로드 -->
+      <div id="pm-img-section" style="display:none;margin-top:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label class="form-label" style="margin:0">상품 이미지</label>
+          <span style="font-size:11px;color:var(--muted)">대표 이미지를 클릭해 변경 · 최대 5MB</span>
+        </div>
+        <!-- 이미지 썸네일 목록 -->
+        <div id="pm-img-list" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;min-height:32px"></div>
+        <!-- 추가 버튼 -->
+        <label id="pm-img-add-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+               padding:10px 18px;border:2px dashed var(--border);border-radius:10px;
+               font-size:13px;font-weight:600;color:var(--muted);transition:.2s"
+               onmouseover="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
           <span>📷 이미지 추가</span>
           <input type="file" id="pm-img-input" accept="image/*" multiple style="display:none" onchange="uploadProductImage(this)">
         </label>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">JPG, PNG, WEBP · 최대 5MB · 첫 번째 이미지가 대표 이미지</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
+          JPG, PNG, WEBP 지원 · 첫 번째(분홍 테두리)가 <strong>대표 이미지</strong><br>
+          수정 모드: 저장된 이미지 클릭 → 대표로 지정
+        </div>
       </div>
     </div>
     <div class="modal-foot">
@@ -845,8 +857,21 @@ async function submitPointAdjust() {
 // ── PRODUCTS ─────────────────────────────────────────────
 async function loadProducts() {
   const res = await apiCall('GET', '/products', null, false) || [];
+  if (!res.length) {
+    document.getElementById('product-tbody').innerHTML =
+      `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:40px">등록된 상품이 없습니다</td></tr>`;
+    return;
+  }
   document.getElementById('product-tbody').innerHTML = res.map(p=>`
     <tr>
+      <td>
+        ${p.main_image
+          ? `<img src="${p.main_image}" alt="${p.product_name}"
+               style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--light);display:block">`
+          : `<div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--navy),#1a2060);
+               display:flex;align-items:center;justify-content:center;font-size:22px">
+               ${EMOJI_MAP[p.category_name]||'🌿'}</div>`}
+      </td>
       <td class="td-muted">${p.product_id}</td>
       <td class="td-bold">${p.product_name}</td>
       <td>${p.category_name}</td>
@@ -863,6 +888,9 @@ async function loadProducts() {
     </tr>
   `).join('');
 }
+
+// EMOJI_MAP (관리자용 — index.html과 동일)
+const EMOJI_MAP = { '토너':'🌿', '앰플':'✨', '크림':'💧', '리필상품':'🔄', '굿즈':'🌱' };
 
 let pendingImages = []; // 신규 등록 시 임시 저장 파일
 
@@ -895,35 +923,81 @@ async function openProductModal(id=null) {
   openModal('product-modal');
 }
 
-// 저장된 이미지(수정 모드)
+// ── 이미지 썸네일 공통 스타일 ──────────────────────────────
+const THUMB_BASE = 'position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;flex-shrink:0';
+
+// 저장된 이미지 렌더 (수정 모드) — 클릭 시 대표 지정
 function renderSavedImages(images) {
   const wrap = document.getElementById('pm-img-list');
-  const saved = images.map(img => `
-    <div style="position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid ${img.is_main?'var(--pink)':'var(--border)'}">
-      <img src="${img.image_url}" style="width:100%;height:100%;object-fit:cover">
-      ${img.is_main ? '<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);color:#fff;font-size:10px;text-align:center;font-weight:700">대표</div>' : ''}
-      <button onclick="deleteProductImage(${img.image_id})" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:1">×</button>
+  wrap.innerHTML = images.map(img => `
+    <div style="${THUMB_BASE};border:2.5px solid ${img.is_main ? 'var(--pink)' : 'var(--border)'}"
+         title="${img.is_main ? '대표 이미지' : '클릭하면 대표 이미지로 지정'}"
+         onclick="setMainImage(${img.image_id}, ${editProductId})">
+      <img src="${img.image_url}" alt="상품이미지"
+           style="width:100%;height:100%;object-fit:cover;display:block">
+      ${img.is_main
+        ? `<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);
+               color:#fff;font-size:10px;text-align:center;font-weight:700;padding:2px 0">★ 대표</div>`
+        : `<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);
+               color:#fff;font-size:10px;text-align:center;padding:2px 0;opacity:0;transition:.2s"
+               class="thumb-hover-label">대표 지정</div>`}
+      <button onclick="event.stopPropagation();deleteProductImage(${img.image_id})"
+              title="이미지 삭제"
+              style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.65);
+                     color:#fff;border:none;border-radius:50%;width:20px;height:20px;
+                     font-size:12px;cursor:pointer;line-height:1;display:flex;
+                     align-items:center;justify-content:center">×</button>
     </div>
   `).join('');
-  wrap.innerHTML = saved;
 }
 
-// 선택된 파일 미리보기 추가 (신규+수정 공통)
-function addImagePreview(file) {
+// 대표 이미지 지정 (수정 모드)
+async function setMainImage(imageId, productId) {
+  await apiCall('PATCH', `/products/${productId}/images/${imageId}/main`, {});
+  toast('대표 이미지가 변경되었습니다', 'success');
+  const p = await apiCall('GET', `/products/${productId}`, null, false);
+  renderSavedImages(p?.images || []);
+  loadProducts();
+}
+
+// 신규 등록 미리보기 추가 — ×버튼으로 제거 가능
+function addImagePreview(file, index) {
   const reader = new FileReader();
   reader.onload = e => {
     const wrap = document.getElementById('pm-img-list');
     const isFirst = wrap.children.length === 0;
     const div = document.createElement('div');
-    div.style.cssText = `position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:2px solid ${isFirst?'var(--pink)':'var(--border)'}`;
+    div.dataset.pendingIndex = index;
+    div.style.cssText = `${THUMB_BASE};border:2.5px solid ${isFirst ? 'var(--pink)' : 'var(--border)'}`;
     div.innerHTML = `
-      <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">
-      ${isFirst ? '<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);color:#fff;font-size:10px;text-align:center;font-weight:700">대표</div>' : ''}
-      <div style="position:absolute;top:2px;right:2px;background:rgba(255,165,0,.9);color:#fff;font-size:9px;padding:1px 3px;border-radius:3px;font-weight:700">NEW</div>
+      <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;display:block">
+      ${isFirst
+        ? `<div style="position:absolute;bottom:0;left:0;right:0;background:var(--pink);
+               color:#fff;font-size:10px;text-align:center;font-weight:700;padding:2px 0">★ 대표</div>`
+        : ''}
+      <div style="position:absolute;top:2px;left:2px;background:rgba(255,150,0,.9);
+                  color:#fff;font-size:9px;padding:1px 4px;border-radius:3px;font-weight:700">NEW</div>
+      <button onclick="event.stopPropagation();removePendingImage(${index},this.closest('div[data-pending-index]'))"
+              title="제거"
+              style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.65);
+                     color:#fff;border:none;border-radius:50%;width:20px;height:20px;
+                     font-size:12px;cursor:pointer;line-height:1;display:flex;
+                     align-items:center;justify-content:center">×</button>
     `;
     wrap.appendChild(div);
   };
   reader.readAsDataURL(file);
+}
+
+// 신규 미리보기 제거
+function removePendingImage(index, el) {
+  pendingImages[index] = null; // null로 표시 (splice 대신)
+  el?.remove();
+  // 남은 첫 번째 항목을 대표로 시각 업데이트
+  const items = document.querySelectorAll('#pm-img-list [data-pending-index]');
+  items.forEach((item, i) => {
+    item.style.borderColor = i === 0 ? 'var(--pink)' : 'var(--border)';
+  });
 }
 
 // 파일 선택 핸들러
@@ -934,17 +1008,18 @@ async function uploadProductImage(input) {
 
   if (editProductId) {
     // 수정 모드: 즉시 업로드
-    for (const file of files) {
-      await doUploadImage(editProductId, file);
-    }
+    toast(`이미지 ${files.length}장 업로드 중...`, 'info');
+    for (const file of files) await doUploadImage(editProductId, file);
     const p = await apiCall('GET', `/products/${editProductId}`, null, false);
     renderSavedImages(p?.images || []);
     loadProducts();
+    toast('이미지 업로드 완료!', 'success');
   } else {
-    // 신규 등록 모드: 임시 저장 후 미리보기만
+    // 신규 등록 모드: 임시 저장 후 미리보기
     files.forEach(file => {
+      const idx = pendingImages.length;
       pendingImages.push(file);
-      addImagePreview(file);
+      addImagePreview(file, idx);
     });
   }
 }
@@ -1011,10 +1086,11 @@ async function submitProduct() {
   } else {
     const res = await apiCall('POST', '/products', body);
     if (!res?.product_id) { toast('상품 등록에 실패했습니다', 'error'); return; }
-    // 신규 등록 후 pending 이미지 업로드
-    if (pendingImages.length) {
-      toast('이미지 업로드 중...', 'info');
-      for (const file of pendingImages) await doUploadImage(res.product_id, file);
+    // 신규 등록 후 pending 이미지 업로드 (null 제거된 것 건너뜀)
+    const validImages = pendingImages.filter(f => f !== null);
+    if (validImages.length) {
+      toast(`이미지 ${validImages.length}장 업로드 중...`, 'info');
+      for (const file of validImages) await doUploadImage(res.product_id, file);
       pendingImages = [];
     }
     toast('상품이 등록되었습니다', 'success');

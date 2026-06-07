@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OBLIGE — Responsible Beauty</title>
   <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
@@ -1077,34 +1079,12 @@ const EMOJI_MAP = { '토너':'🌿', '앰플':'✨', '크림':'💧', '리필상
 // ══ STATE ═════════════════════════════════════════════════════
 let state = {
   user:     null,
-  token:    localStorage.getItem('oblige_token'),
+  token:    null,   // Supabase 세션 토큰 (UI 분기용)
   cart:     [],
   products: [],
   activeCampaign: null,
 };
-
-// ══ API HELPER ════════════════════════════════════════════════
-// { data } = 성공 응답  /  { error } = 서버 오류  /  null = 네트워크 실패
-async function apiCall(method, path, body, auth=true) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (auth && state.token) headers['Authorization'] = 'Bearer ' + state.token;
-  try {
-    const res = await fetch(API + path, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined
-    });
-    const text = await res.text();
-    try { return JSON.parse(text); }
-    catch(e) {
-      console.error('API 응답이 JSON이 아닙니다:', text.slice(0, 300));
-      return { error: 'API 응답 오류 (서버 로그 확인 필요)' };
-    }
-  } catch(e) {
-    console.error('네트워크 오류:', e.message);
-    return null;
-  }
-}
+// apiCall 은 js/supabase.js 에서 전역으로 정의됩니다.
 
 // ══ TOAST ════════════════════════════════════════════════════
 function toast(msg, type='info') {
@@ -1162,23 +1142,16 @@ async function doLogin() {
 
   const res = await apiCall('POST', '/auth/login', { email, password: pw }, false);
 
-  if (res === null) {
-    // 네트워크 연결 실패
-    err.textContent = '서버에 연결할 수 없습니다. PHP 서버가 실행 중인지 확인해주세요.';
-  } else if (res.error) {
-    // 서버에서 오류 응답 (잘못된 이메일/비밀번호 등)
+  if (res?.error) {
     err.textContent = res.error;
-  } else if (res.token) {
-    // 로그인 성공
+  } else if (res?.token) {
     state.token = res.token;
     state.user  = res.user;
-    localStorage.setItem('oblige_token', res.token);
-    localStorage.setItem('oblige_user', JSON.stringify(res.user));
-    if (res.user.role === 'ADMIN') localStorage.setItem('oblige_admin_token', res.token);
     updateNavAuth();
     loadCart();
     closeOverlay('auth-overlay');
-    toast(`환영합니다, ${res.user.name}님! ${res.user.grade_icon} ${res.user.grade_name}`, 'success');
+    const gradeIcon = { Seed:'🌱', Leaf:'🍃', Tree:'🌳', Forest:'🌲' }[res.user.grade_name] || '🌱';
+    toast(`환영합니다, ${res.user.name}님! ${gradeIcon} ${res.user.grade_name}`, 'success');
   } else {
     err.textContent = '로그인에 실패했습니다. 다시 시도해주세요.';
   }
@@ -1201,13 +1174,10 @@ async function doRegister() {
 
   const res = await apiCall('POST', '/auth/register', { name, email, password: pw }, false);
 
-  if (res === null) {
-    err.textContent = '서버에 연결할 수 없습니다. PHP 서버가 실행 중인지 확인해주세요.';
-  } else if (res.error) {
+  if (res?.error) {
     err.textContent = res.error;
   } else {
-    // 회원가입 성공
-    toast(`${name}님, 회원가입이 완료되었습니다! 🌱 로그인해주세요.`, 'success');
+    toast(`${name}님, 회원가입이 완료되었습니다! 🌱 이메일을 확인 후 로그인해주세요.`, 'success');
     switchTab('login');
     document.getElementById('login-email').value = email;
     document.getElementById('login-pw').value = '';
@@ -1216,11 +1186,9 @@ async function doRegister() {
   btn.disabled = false; btn.textContent = '회원가입';
 }
 
-function doLogout() {
+async function doLogout() {
+  await apiCall('POST', '/auth/logout');
   state.user = null; state.token = null; state.cart = [];
-  localStorage.removeItem('oblige_token');
-  localStorage.removeItem('oblige_user');
-  localStorage.removeItem('oblige_admin_token');
   updateNavAuth(); updateCartBadge();
   toast('로그아웃 되었습니다');
 }
@@ -1613,24 +1581,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
   loadCampaigns();
 
-  // 토큰이 있으면 /auth/me 로 사용자 정보 복원
-  if (state.token) {
-    apiCall('GET', '/auth/me').then(res => {
-      if (res && res.user_id) {
-        state.user = res;
-        localStorage.setItem('oblige_user', JSON.stringify(res));
+  // Supabase 세션 복원 (자동 로그인)
+  _sb.auth.getSession().then(async ({ data: { session } }) => {
+    if (session) {
+      const me = await apiCall('GET', '/auth/me');
+      if (me && !me.error) {
+        state.token = session.access_token;
+        state.user  = me;
         updateNavAuth();
         loadCart();
-      } else {
-        // 토큰 만료 or 서버 오류 → 로그아웃 처리
-        state.token = null;
-        state.user  = null;
-        localStorage.removeItem('oblige_token');
-        localStorage.removeItem('oblige_user');
-        updateNavAuth();
       }
-    });
-  }
+    }
+  });
 
   // ESC 키로 모달 닫기
   document.addEventListener('keydown', e => {

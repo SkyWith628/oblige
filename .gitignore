@@ -12,6 +12,13 @@ vendor/
 dist/
 build/
 frontend/dist/
+.vite/
+
+# 프리뷰
+*-preview.html
+
+# Supabase 로컬
+supabase/
 
 # macOS
 .DS_Store

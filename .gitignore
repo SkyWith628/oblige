@@ -40,3 +40,9 @@ uploads/
 # 로그
 *.log
 error_log
+
+# iOS / Xcode
+ios/ObligeApp.xcodeproj/xcuserdata/
+ios/ObligeApp.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xcbkptlist

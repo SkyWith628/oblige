@@ -3,6 +3,8 @@
 > **공병을 반납하고, 지속가능한 아름다움을 채우다.**  
 > 비건 화장품 구매 · 공병 반납 · 포인트 적립 · 리필 보상까지 연결된 ESG 코스메틱 플랫폼.
 
+📅 **개발 기간:** 2026.05 ~ (진행 중)
+
 [![Deploy](https://github.com/SkyWith628/oblige/actions/workflows/deploy.yml/badge.svg)](https://github.com/SkyWith628/oblige/actions/workflows/deploy.yml)
 
 ---

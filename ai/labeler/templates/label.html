@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공병 라벨링</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+
+    header {
+      background: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+
+    .progress-wrap { display: flex; align-items: center; gap: 12px; }
+    .progress-bar  { width: 200px; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #4CAF50; border-radius: 5px; transition: width .3s; }
+    .progress-text { font-size: 13px; color: #666; }
+
+    .container { max-width: 760px; margin: 32px auto; padding: 0 16px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #888;
+      background: #fffbe6;
+      border-left: 3px solid #f9c74f;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    /* 캔버스 wrapper */
+    .canvas-wrap {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 14px;
+      user-select: none;
+    }
+    #label-image {
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 10px;
+      border: 2px solid #eee;
+      display: block;
+      margin: 0 auto;
+    }
+    #bbox-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      border-radius: 10px;
+    }
+
+    .bbox-tip {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .bbox-tip span { color: #2196F3; font-weight: 600; }
+
+    .class-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .class-btn {
+      padding: 14px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .1s, opacity .1s;
+      color: #fff;
+    }
+    .class-btn:hover  { opacity: .88; transform: translateY(-1px); }
+    .class-btn:active { transform: scale(.97); }
+
+    .btn-토너   { background: #2196F3; }
+    .btn-앰플   { background: #9C27B0; }
+    .btn-크림   { background: #FF9800; }
+    .btn-선크림 { background: #4CAF50; }
+    .btn-에센스 { background: #00BCD4; }
+    .btn-reject { background: #f44336; }
+
+    .shortcut { font-size: 12px; color: #aaa; text-align: center; }
+
+    .done {
+      text-align: center;
+      padding: 60px 0;
+      color: #4CAF50;
+      font-size: 22px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🧴 공병 라벨링</h1>
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress-fill" id="fill"
+           style="width: {{ (progress.labeled / progress.total * 100)|round(1) if progress.total else 0 }}%">
+      </div>
+    </div>
+    <span class="progress-text" id="prog-text">
+      {{ progress.labeled }} / {{ progress.total }}장
+    </span>
+  </div>
+</header>
+
+<div class="container">
+  {% if current %}
+  <div class="card">
+    <div class="hint">
+      AI 예상 분류: <strong>{{ current.suggested }}</strong>
+      &nbsp;·&nbsp; 남은 이미지: <strong>{{ remaining }}장</strong>
+    </div>
+
+    <p class="bbox-tip">
+      이미지를 <span>드래그</span>해서 공병 위치를 표시하세요.
+      표시 없이 버튼을 누르면 전체 이미지를 bbox로 저장합니다.
+    </p>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <img id="label-image" src="/raw/{{ current.path }}" />
+      <canvas id="bbox-canvas"></canvas>
+    </div>
+
+    <div class="class-buttons">
+      <button class="class-btn btn-토너"   onclick="saveLabel('토너')">토너 (1)</button>
+      <button class="class-btn btn-앰플"   onclick="saveLabel('앰플')">앰플 (2)</button>
+      <button class="class-btn btn-크림"   onclick="saveLabel('크림')">크림 (3)</button>
+      <button class="class-btn btn-선크림" onclick="saveLabel('선크림')">선크림 (4)</button>
+      <button class="class-btn btn-에센스" onclick="saveLabel('에센스')">에센스 (5)</button>
+      <button class="class-btn btn-reject" onclick="saveLabel('불량/제외')">불량/제외 (0)</button>
+    </div>
+
+    <p class="shortcut">단축키: 1 토너 &nbsp; 2 앰플 &nbsp; 3 크림 &nbsp; 4 선크림 &nbsp; 5 에센스 &nbsp; 0 불량 &nbsp; R 박스초기화</p>
+  </div>
+  {% else %}
+  <div class="card done">
+    ✅ 모든 라벨링 완료!<br>
+    <span style="font-size:15px; color:#666; font-weight:400; margin-top:8px; display:block;">
+      이제 python3 main.py prepare 후 학습을 진행하세요.
+    </span>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  const imagePath = "{{ current.path if current else '' }}";
+
+  // ── bbox 드로잉 ──────────────────────────────────────────
+  const img    = document.getElementById("label-image");
+  const canvas = document.getElementById("bbox-canvas");
+  const ctx    = canvas.getContext("2d");
+
+  let drag = { active: false, x0: 0, y0: 0, x1: 0, y1: 0 };
+  let bbox = null;  // [cx, cy, w, h] 정규화 — null이면 전체 이미지
+
+  function syncCanvas() {
+    const r = img.getBoundingClientRect();
+    canvas.width  = r.width;
+    canvas.height = r.height;
+    canvas.style.left = (img.offsetLeft) + "px";
+    canvas.style.top  = (img.offsetTop)  + "px";
+    canvas.style.width  = r.width  + "px";
+    canvas.style.height = r.height + "px";
+    redraw();
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (drag.active) {
+      drawRect(drag.x0, drag.y0, drag.x1, drag.y1, "#2196F3");
+    } else if (bbox) {
+      const [cx, cy, w, h] = bbox;
+      const W = canvas.width, H = canvas.height;
+      const x0 = (cx - w / 2) * W, y0 = (cy - h / 2) * H;
+      drawRect(x0, y0, x0 + w * W, y0 + h * H, "#4CAF50");
+    }
+  }
+
+  function drawRect(x0, y0, x1, y1, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([]);
+    ctx.fillStyle   = color + "22";
+    const x = Math.min(x0, x1), y = Math.min(y0, y1);
+    const w = Math.abs(x1 - x0),  h = Math.abs(y1 - y0);
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeRect(x, y, w, h);
+  }
+
+  function canvasPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - r.left, y: clientY - r.top };
+  }
+
+  canvas.addEventListener("mousedown", e => {
+    const p = canvasPos(e);
+    drag = { active: true, x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+    bbox = null;
+  });
+  canvas.addEventListener("mousemove", e => {
+    if (!drag.active) return;
+    const p = canvasPos(e);
+    drag.x1 = p.x; drag.y1 = p.y;
+    redraw();
+  });
+  canvas.addEventListener("mouseup", e => {
+    if (!drag.active) return;
+    drag.active = false;
+    const W = canvas.width, H = canvas.height;
+    const x0 = Math.min(drag.x0, drag.x1), x1 = Math.max(drag.x0, drag.x1);
+    const y0 = Math.min(drag.y0, drag.y1), y1 = Math.max(drag.y0, drag.y1);
+    const w = x1 - x0, h = y1 - y0;
+    if (w < 10 || h < 10) { bbox = null; redraw(); return; }  // 너무 작으면 무시
+    const cx = (x0 + w / 2) / W, cy = (y0 + h / 2) / H;
+    bbox = [cx, cy, w / W, h / H];
+    redraw();
+  });
+
+  img.addEventListener("load", syncCanvas);
+  window.addEventListener("resize", syncCanvas);
+  if (img.complete) syncCanvas();
+
+  // ── 저장 ────────────────────────────────────────────────
+  function saveLabel(cls) {
+    if (!imagePath) return;
+    fetch("/save_label", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_path: imagePath, class_name: cls, bbox: bbox })
+    })
+    .then(r => r.json())
+    .then(() => location.reload());
+  }
+
+  // ── 키보드 단축키 ────────────────────────────────────────
+  const keyMap = {
+    "1": "토너", "2": "앰플", "3": "크림",
+    "4": "선크림", "5": "에센스", "0": "불량/제외"
+  };
+  document.addEventListener("keydown", e => {
+    if (keyMap[e.key]) { saveLabel(keyMap[e.key]); return; }
+    if (e.key === "r" || e.key === "R") { bbox = null; redraw(); }
+  });
+</script>
+</body>
+</html>

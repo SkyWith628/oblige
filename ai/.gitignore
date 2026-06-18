@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+*.pt
+dataset/raw/
+dataset/images/
+dataset/labels/
+dataset/rejected/
+uploads/
+runs/
+.DS_Store

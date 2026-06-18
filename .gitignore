@@ -41,6 +41,27 @@ uploads/
 *.log
 error_log
 
+# Python (ai/ · api/)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# AI 모델/학습 (대용량 — best.pt는 별도 관리)
+ai/yolov8n.pt
+ai/runs/**/last.pt
+
+# Next.js (web/)
+web/node_modules/
+web/.next/
+web/out/
+
+# 임시 디자인 시안 (scratch)
+_mockup/
+
 # iOS / Xcode
 ios/ObligeApp.xcodeproj/xcuserdata/
 ios/ObligeApp.xcodeproj/project.xcworkspace/xcuserdata/

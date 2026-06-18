@@ -1,0 +1,37 @@
+# OBLIGE 로컬 개발 스택
+# 현재: PostgreSQL (Phase 2). web/api 서비스는 Phase 7에서 추가.
+# 실행:  docker compose up -d db
+#        최초 기동 시 db/schema.sql → db/seed.sql 이 자동 적용된다.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: oblige-db
+    environment:
+      POSTGRES_USER: oblige
+      POSTGRES_PASSWORD: oblige_dev
+      POSTGRES_DB: oblige
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 최초 기동 시 1회 자동 실행 (알파벳 순)
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oblige -d oblige"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 가벼운 DB 관리 GUI (http://localhost:8080)
+  adminer:
+    image: adminer:latest
+    container_name: oblige-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

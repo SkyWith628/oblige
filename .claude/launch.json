@@ -12,6 +12,13 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "8002", "."],
       "port": 8002
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "web",
+      "port": 3000
     }
   ]
 }

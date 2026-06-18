@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     )
 
     # 인증 (JWT)
-    jwt_secret: str = "change-me-in-prod"
+    jwt_secret: str = "change-me-in-prod-to-a-secure-32byte-random-string"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
 

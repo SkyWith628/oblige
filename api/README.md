@@ -33,17 +33,27 @@ uvicorn app.main:app --reload   # http://localhost:8000
 > DB 연동 엔드포인트(auth·products)는 PostgreSQL이 떠 있어야 동작한다
 > (`docker compose up -d db`). `/health`, `/docs` 는 DB 없이도 응답.
 
-## 엔드포인트 (Phase 3 코어)
+## 엔드포인트
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/health` | 헬스체크 |
-| POST | `/api/auth/register` | 회원가입 |
-| POST | `/api/auth/login` | 로그인 (JWT 발급) |
-| GET | `/api/auth/me` | 내 정보 (인증 필요) |
-| GET | `/api/products` | 상품 목록 |
-| GET | `/api/products/{id}` | 상품 상세 |
+| POST | `/api/auth/register` · `login` | 회원가입 / 로그인(JWT) |
+| GET | `/api/auth/me` | 내 정보 |
+| GET | `/api/products` · `/{id}` | 상품 목록 / 상세 |
+| GET·POST | `/api/cart` | 장바구니 조회 / 담기 |
+| PATCH·DELETE | `/api/cart/{id}` | 수량 변경 / 삭제 |
+| POST | `/api/orders` | 주문 생성 (서버 가격·재고 재확정, 포인트·재고 원장) |
+| GET | `/api/orders` · `/{id}` | 내 주문 / 상세 |
+| POST | `/api/orders/{id}/cancel` | 취소 (재고 복원·포인트 환급/회수) |
+| POST·GET | `/api/returns` | 공병 반납 신청 / 내 신청 |
+| PATCH | `/api/returns/{id}/status` | (관리자) 상태 전이, APPROVED 시 포인트·등급 |
+| GET | `/api/points` · `/balance` | 포인트 내역 / 잔액 |
 | POST | `/api/ai/detect-bottle` | 공병 사진 → 종류·개수 탐지 (YOLO) |
 
-## 다음 (Phase 4)
-주문/장바구니/공병반납/포인트 트랜잭션 + 관리자 API. Alembic 마이그레이션 도입.
-AI 에이전트(반납 어시스턴트)는 Phase 6.
+## 비즈니스 규칙 (services/)
+- 포인트·재고 헬퍼는 commit하지 않고 호출자 트랜잭션 공유 (중첩 트랜잭션 방지)
+- 주문 생성: 행 잠금 + 서버 가격 재확정 + 재고 차감·원장 + 멱등 적립
+- 멱등키(`order:{id}:earn` 등)로 중복 지급 차단, 상태 전이 검증(`transitions.py`)
+
+## 다음 (Phase 5/6)
+Next.js(web) 연동 · AI 에이전트(반납 어시스턴트). DB 기동 후 Alembic 도입.

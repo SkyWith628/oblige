@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import settings
-from .routers import ai, auth, products
+from .routers import ai, auth, cart, orders, points, products, returns
 
 app = FastAPI(
     title="OBLIGE API",
@@ -27,4 +27,8 @@ def health():
 
 app.include_router(auth.router)
 app.include_router(products.router)
+app.include_router(cart.router)
+app.include_router(orders.router)
+app.include_router(returns.router)
+app.include_router(points.router)
 app.include_router(ai.router)

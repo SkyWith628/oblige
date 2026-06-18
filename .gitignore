@@ -1,6 +1,6 @@
 # 환경 설정 (절대 커밋 금지)
-api/config/db.php
-api/config/figma.php
+legacy/api-php/config/db.php
+legacy/api-php/config/figma.php
 .env
 .env.local
 

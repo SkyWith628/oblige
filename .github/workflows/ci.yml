@@ -1,0 +1,60 @@
+name: OBLIGE CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  web-build:
+    name: 🌐 web (Next.js) build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  api-test:
+    name: ⚙️ api (FastAPI) 통합 테스트
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: oblige
+          POSTGRES_PASSWORD: oblige_dev
+          POSTGRES_DB: oblige
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U oblige -d oblige"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt httpx
+      - name: 스키마 적용
+        env:
+          PGPASSWORD: oblige_dev
+        run: |
+          psql -h localhost -U oblige -d oblige -v ON_ERROR_STOP=1 -f ../db/schema.sql
+          psql -h localhost -U oblige -d oblige -v ON_ERROR_STOP=1 -f ../db/seed.sql
+      - name: Phase 4 통합 검증
+        env:
+          DATABASE_URL: postgresql+psycopg://oblige:oblige_dev@localhost:5432/oblige
+          PYTHONPATH: .
+        run: python scripts/verify_phase4.py

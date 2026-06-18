@@ -100,7 +100,7 @@ oblige/
 | **4** | FastAPI 비즈니스 (주문/포인트/반납 트랜잭션) | ✅ 완료 (실거래 통합테스트 22/22 통과) |
 | **5** | Next.js 화면 + 사진 업로드 UI | ⬜ |
 | **6** | AI 에이전트 (반납 어시스턴트, Claude tool use) | ✅ 코드 완료 (실대화는 ANTHROPIC_API_KEY 필요) |
-| **7** | Docker Compose 통합 + Vercel/Railway 배포 | ⬜ |
+| **7** | Docker Compose(web+api+db) + CI + Vercel/Railway 배포 구성 | ✅ 구성 완료 (실배포는 Docker/계정 필요) |
 
 > 비즈니스 로직(주문·포인트·반납 트랜잭션 규칙)의 상세 명세는
 > [database-management-design.md](database-management-design.md) 를 따른다.

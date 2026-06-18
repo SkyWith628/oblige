@@ -9,6 +9,7 @@ pydantic[email]>=2.8
 PyJWT>=2.9
 bcrypt>=4.2
 python-multipart>=0.0.9
+anthropic>=0.40
 
 # ── AI 추론 (무거움 ~2GB, 별도 설치) ──────────────────────
 # 학습/서빙 시에만 설치. 미설치 시 /api/ai/* 는 503 반환.

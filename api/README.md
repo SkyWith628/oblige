@@ -49,11 +49,17 @@ uvicorn app.main:app --reload   # http://localhost:8000
 | PATCH | `/api/returns/{id}/status` | (관리자) 상태 전이, APPROVED 시 포인트·등급 |
 | GET | `/api/points` · `/balance` | 포인트 내역 / 잔액 |
 | POST | `/api/ai/detect-bottle` | 공병 사진 → 종류·개수 탐지 (YOLO) |
+| POST | `/api/agent/chat` | 반납 어시스턴트 (Claude tool use: 탐지·등급·반납 신청) |
 
 ## 비즈니스 규칙 (services/)
 - 포인트·재고 헬퍼는 commit하지 않고 호출자 트랜잭션 공유 (중첩 트랜잭션 방지)
 - 주문 생성: 행 잠금 + 서버 가격 재확정 + 재고 차감·원장 + 멱등 적립
 - 멱등키(`order:{id}:earn` 등)로 중복 지급 차단, 상태 전이 검증(`transitions.py`)
 
-## 다음 (Phase 5/6)
-Next.js(web) 연동 · AI 에이전트(반납 어시스턴트). DB 기동 후 Alembic 도입.
+## AI 에이전트 (반납 어시스턴트)
+`services/agent.py` — Claude(`claude-opus-4-8`, adaptive thinking)가 도구를 호출:
+`detect_bottle`(YOLO) · `get_membership_status`(DB) · `create_return`(반납 신청).
+실대화에는 `.env`의 `ANTHROPIC_API_KEY` 필요 (미설정 시 503).
+
+## 다음 (Phase 7)
+Next.js(web) 연동 · Docker Compose 통합 · Vercel/Railway 배포. DB 기동 후 Alembic 도입.

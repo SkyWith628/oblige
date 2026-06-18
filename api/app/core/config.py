@@ -22,5 +22,9 @@ class Settings(BaseSettings):
     # AI 모델 가중치 경로 (ai/ 에서 학습한 best.pt)
     model_path: str = "../ai/runs/detect/cosmetic_bottle/weights/best.pt"
 
+    # AI 에이전트 (반납 어시스턴트) — Claude
+    anthropic_api_key: str = ""
+    agent_model: str = "claude-opus-4-8"
+
 
 settings = Settings()

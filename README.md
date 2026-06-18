@@ -1,146 +1,87 @@
 # OBLIGE — Responsible Beauty
 
-> **공병을 반납하고, 지속가능한 아름다움을 채우다.**  
-> 비건 화장품 구매 · 공병 반납 · 포인트 적립 · 리필 보상까지 연결된 ESG 코스메틱 플랫폼.
+> **공병을 반납하고, 지속가능한 아름다움을 채우다.**
+> 비건 화장품 구매 · **AI 공병 인식** · 포인트 적립 · 리필 보상까지 연결된 ESG 코스메틱 플랫폼.
 
-[![Deploy](https://github.com/SkyWith628/oblige/actions/workflows/deploy.yml/badge.svg)](https://github.com/SkyWith628/oblige/actions/workflows/deploy.yml)
+[![CI](https://github.com/SkyWith628/oblige/actions/workflows/ci.yml/badge.svg)](https://github.com/SkyWith628/oblige/actions/workflows/ci.yml)
 
----
-
-## 🌐 서비스 주소
-
-| 서비스 | URL |
-|--------|-----|
-| 메인 사이트 | [skywith628.github.io/oblige](https://skywith628.github.io/oblige/) |
-| 관리자 페이지 | [skywith628.github.io/oblige/admin.html](https://skywith628.github.io/oblige/admin.html) |
+비건 화장품을 쓰고 공병을 반납하면 **YOLO 모델이 사진으로 종류·개수를 인식**해 포인트로 돌려주고,
+**LLM 반납 어시스턴트**가 반납을 안내하는 풀스택 ESG 플랫폼.
 
 ---
 
-## ♻️ OBLIGE 순환형 ESG 시스템
+## 🧱 아키텍처 (모노레포)
 
 ```
-비건 화장품 구매 → 공병 준비 → 공병 반납 & 포인트 적립
-       ↑                                    ↓
-  리필 혜택 & 리워드  ←  재사용 & 업사이클링 파트너 처리
+[사용자/iOS] → web(Next.js) → api(FastAPI) → db(PostgreSQL)
+                                  │
+                            ai(YOLOv8 공병 인식) · Claude 반납 어시스턴트
 ```
-
-| 단계 | 내용 |
-|------|------|
-| 1️⃣ 비건 화장품 구매 | 동물 성분 무첨가, 친환경 패키지 제품 |
-| 2️⃣ 공병 준비 | 세척 후 반납 가능한 OBLIGE 공병 |
-| 3️⃣ 공병 반납 & 포인트 | 오프라인 수거함 또는 택배 반납 후 즉시 적립 |
-| 4️⃣ 리필 혜택 & 리워드 | 기준 달성 시 본품 리필 또는 친환경 굿즈 제공 |
-| 5️⃣ 재사용 & 업사이클링 | 수거 공병은 리사이클링 파트너와 협력 처리 |
-
----
-
-## 🌱 멤버십 등급
-
-공병을 반납할수록 등급이 올라가고, 더 많은 혜택이 주어집니다.
-
-| 등급 | 조건 | 혜택 |
-|------|------|------|
-| 🌱 Seed | 기본 | 기본 포인트 적립, 회원 전용 뉴스레터 |
-| 🍃 Leaf | 공병 3개 반납 | 추가 포인트 +10%, 신제품 우선 구매 |
-| 🌳 Tree | 공병 7개 반납 | 친환경 굿즈 제공, 포인트 +20%, 리필 할인 쿠폰 |
-| 🌲 Forest | 공병 15개 반납 | 리필 무료 혜택, 한정 상품 우선 제공, 앰배서더 자격 |
-
----
-
-## 🛠️ 기술 스택
 
 | 영역 | 기술 |
 |------|------|
-| Frontend | HTML5 · CSS3 · Vanilla JS |
-| Backend & Auth | [Supabase](https://supabase.com) (PostgreSQL + Auth + Storage) |
-| 배포 | GitHub Pages + GitHub Actions |
-| 이미지 스토리지 | Supabase Storage |
+| Frontend | Next.js 16 (App Router) · TypeScript |
+| Mobile | iOS (Swift) — 사진 업로드 주력 |
+| Backend | FastAPI (Python 3.12) · SQLAlchemy · JWT/bcrypt |
+| Database | PostgreSQL 16 |
+| AI 비전 | Ultralytics YOLOv8 (공병 인식) |
+| AI 에이전트 | Claude (`claude-opus-4-8`, tool use) |
+| 배포 | Vercel(web) + Railway(api+db) |
+| DevOps | Docker Compose · GitHub Actions |
 
----
+> 설계 상세: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · 배포: [docs/DEPLOY.md](docs/DEPLOY.md) · DB: [docs/database-management-design.md](docs/database-management-design.md)
 
-## 📁 프로젝트 구조
+## 📁 디렉토리
 
 ```
 oblige/
-├── index.html              메인 웹사이트
-├── admin.html              관리자 대시보드
-├── js/
-│   ├── config.js           Supabase URL/KEY (Actions가 자동 주입)
-│   └── supabase.js         Supabase SDK + apiCall 호환 레이어
-├── assets/
-│   ├── logo-brand.svg
-│   └── logo-nav.svg
-├── database/
-│   └── supabase_schema.sql Supabase SQL Editor용 전체 스키마
-├── figma-plugin/           Figma 디자인 연동 플러그인
-└── .github/workflows/
-    └── deploy.yml          GitHub Pages 자동 배포
+├── web/        Next.js 프론트엔드 (디자인-무관 레이어 분리)
+├── api/        FastAPI — auth·products·cart·orders·returns·points·ai·agent
+│   ├── app/    core(config·db·security) · models · routers · services
+│   └── scripts/verify_phase4.py  거래 통합 테스트
+├── ai/         YOLOv8 공병 인식 (크롤러·라벨러·데이터셋·학습)
+├── db/         PostgreSQL schema.sql · seed.sql
+├── ios/        iOS 앱
+├── docs/       설계·배포 문서
+├── legacy/     이전 PHP 백엔드 (보관)
+└── docker-compose.yml
 ```
 
----
-
-## 🗄️ DB 테이블
-
-```
-profiles · grade_rules · categories
-products · product_images
-cart_items · orders · order_items
-bottle_returns · refill_requests
-point_logs · campaigns · campaign_participants
-notifications · reviews · shipping_addresses
-```
-
----
-
-## 🚀 배포 방법
-
-### 1. Supabase 프로젝트 설정
-
-1. [supabase.com](https://supabase.com) 에서 새 프로젝트 생성
-2. **SQL Editor** → `database/supabase_schema.sql` 전체 붙여넣기 후 **Run**
-3. **Storage** → `products` 버킷 생성 (Public ON)
-
-### 2. GitHub Secrets 등록
-
-GitHub 저장소 → **Settings → Secrets and variables → Actions**
-
-| Secret | 값 위치 |
-|--------|---------|
-| `SUPABASE_URL` | Supabase 대시보드 → Settings → API → Project URL |
-| `SUPABASE_ANON_KEY` | 같은 페이지 → anon public 키 |
-
-### 3. GitHub Pages 활성화
-
-GitHub 저장소 → **Settings → Pages → Source: GitHub Actions**
-
-이후 `main` 브랜치에 push하면 자동 배포됩니다.
-
----
-
-## 🔑 관리자 계정
-
-| 항목 | 값 |
-|------|-----|
-| 이메일 | `admin@oblige.kr` |
-| 비밀번호 | `Admin@1234` |
-
-> ⚠️ 운영 환경에서는 반드시 비밀번호를 변경하세요.
-
----
-
-## 💻 로컬 실행
+## 🚀 로컬 실행
 
 ```bash
-# 정적 파일 서버 실행
-npx serve -l 3000 .
+# 1) 풀스택 (Docker)
+docker compose up -d --build
+#   web http://localhost:3000 · api http://localhost:8000/docs
 
-# 접속
-open http://localhost:3000/index.html   # 메인
-open http://localhost:3000/admin.html  # 관리자
+# 2) 개별 실행
+#   DB:  docker compose up -d db   (또는 로컬 PostgreSQL)
+#   API: cd api && py -3.12 -m venv .venv && .venv\Scripts\activate
+#        pip install -r requirements.txt && uvicorn app.main:app --reload
+#   web: cd web && npm install && npm run dev
 ```
 
-`js/config.js`의 `REPLACE_SUPABASE_URL`, `REPLACE_SUPABASE_ANON_KEY`를  
-실제 Supabase 프로젝트 값으로 교체하면 로컬에서도 실제 DB와 연동됩니다.
+AI 추론(`/api/ai/*`)은 `pip install ultralytics`, 반납 어시스턴트(`/api/agent/chat`)는 `.env`에 `ANTHROPIC_API_KEY` 필요.
+
+## ♻️ 순환형 ESG 시스템
+
+```
+비건 화장품 구매 → 공병 준비 → AI 인식 & 포인트 적립 → 리필 혜택 → 재사용·업사이클
+```
+
+| 등급 | 조건 | 혜택 |
+|------|------|------|
+| 🌱 Seed | 기본 | 기본 적립 |
+| 🍃 Leaf | 공병 3개 | 포인트 +10% |
+| 🌳 Tree | 공병 7개 | 굿즈 · +20% · 리필 쿠폰 |
+| 🌲 Forest | 공병 15개 | 리필 무료 · 앰배서더 |
+
+## 🔌 주요 API (17개 엔드포인트)
+
+`auth(가입/로그인/내정보)` · `products` · `cart` · `orders(생성·취소, 재고·포인트 원장)` ·
+`returns(반납 신청·관리자 승인)` · `points` · `ai/detect-bottle(YOLO)` · `agent/chat(반납 어시스턴트)`
+
+핵심 규칙: 서버 측 가격·재고 재확정 · 멱등키 중복지급 방지 · 상태 전이 검증 · 원장 분리(포인트·재고).
 
 ---
 

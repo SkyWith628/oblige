@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
-// 디스플레이 세리프 — next/font 로 최적화 로딩, CSS 변수로 노출.
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+// 라틴 디스플레이 세리프 — 럭셔리 뷰티 톤의 고대비 가라몬드.
+// (한글 세리프는 Nanum Myeongjo 를 <head> CDN 으로 로드 — Korean 서브셋은 next/font 보다 CDN 이 안전)
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["500", "700", "900"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -21,12 +22,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" className={playfair.variable}>
+    <html lang="ko" className={cormorant.variable}>
       <head>
         {/* 본문 폰트 Pretendard — Google Fonts 미제공이라 CDN 로드 */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+        />
+        {/* 한글 디스플레이 세리프 — 아모레퍼시픽 아리따부리(Arita Buri, 명조) · 실제 대기업 코퍼레이션 서체 */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/fonts-archive/AritaBuri/AritaBuri.css"
         />
       </head>
       <body>{children}</body>

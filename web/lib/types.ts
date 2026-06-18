@@ -46,3 +46,45 @@ export interface Stat {
   value: string;
   label: string;
 }
+
+// ── 인증/마이페이지 (FastAPI 스키마와 1:1) ──────────────────
+
+/** GET /api/auth/me → UserOut */
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  grade: string;
+  total_point: number;
+  bottle_return_count: number;
+}
+
+/** GET /api/points/balance */
+export interface Balance {
+  balance: number;
+  grade: string;
+}
+
+/** GET /api/points → PointTxOut[] */
+export interface PointTx {
+  id: number;
+  point_change: number;
+  balance_after: number;
+  tx_type: string;
+  reason: string | null;
+  created_at: string;
+}
+
+/** GET /api/returns → ReturnOut[] */
+export interface Return {
+  id: number;
+  return_number: string;
+  bottle_count: number;
+  return_method: string;
+  photo_urls: string[];
+  ai_detection: Record<string, unknown> | null;
+  return_status: string;
+  approved_point: number;
+  created_at: string;
+}

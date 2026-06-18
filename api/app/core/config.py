@@ -22,9 +22,10 @@ class Settings(BaseSettings):
     # AI 모델 가중치 경로 (ai/ 에서 학습한 best.pt)
     model_path: str = "../ai/runs/detect/cosmetic_bottle/weights/best.pt"
 
-    # AI 에이전트 (반납 어시스턴트) — Claude
-    anthropic_api_key: str = ""
-    agent_model: str = "claude-opus-4-8"
+    # AI 에이전트 (반납 어시스턴트) — Gemini 2.5 Flash (임시)
+    # GOOGLE_API_KEY 환경변수에서 로드. (원래는 Claude — 추후 복귀 가능)
+    google_api_key: str = ""
+    agent_model: str = "gemini-2.5-flash"
 
 
 settings = Settings()

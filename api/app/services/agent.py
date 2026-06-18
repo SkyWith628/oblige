@@ -1,14 +1,13 @@
-"""반납 어시스턴트 — Claude(tool use)가 비전·DB 도구를 호출하는 에이전트.
+"""반납 어시스턴트 — Gemini 2.5 Flash(function calling)가 비전·DB 도구를 호출하는 에이전트.
 
 도구:
   - detect_bottle        : 업로드된 사진을 YOLO로 분석 (종류·개수)
   - get_membership_status: 현재 사용자의 등급·포인트·누적 반납
   - create_return        : 공병 반납 신청 생성
 
-ANTHROPIC_API_KEY 미설정 또는 anthropic 미설치 시 AgentUnavailable.
+GOOGLE_API_KEY 미설정 또는 google-genai 미설치 시 AgentUnavailable.
+(임시로 Gemini 사용 — 원래 설계는 Claude tool use)
 """
-import json
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -39,23 +38,23 @@ def _system_prompt(user: User) -> str:
     )
 
 
+# Gemini function declarations — Claude의 input_schema 대신 parameters 키 사용.
+# 무인자 도구는 parameters 를 생략한다(Gemini는 빈 properties 객체를 거부할 수 있음).
 TOOLS = [
     {
         "name": "detect_bottle",
         "description": "사용자가 이번 대화에 업로드한 공병 사진을 YOLO 모델로 분석해 "
         "종류별 개수와 총 개수를 반환한다. 사진이 없으면 오류를 반환한다.",
-        "input_schema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_membership_status",
         "description": "현재 사용자의 등급, 보유 포인트, 누적 반납 수, 다음 등급까지 "
         "남은 공병 수를 조회한다.",
-        "input_schema": {"type": "object", "properties": {}},
     },
     {
         "name": "create_return",
         "description": "공병 반납 신청을 생성한다. 사용자 동의를 받은 뒤에만 호출한다.",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "bottle_count": {"type": "integer", "description": "반납할 공병 개수 (1 이상)"},
@@ -110,12 +109,25 @@ def _dispatch(name: str, tool_input: dict, db: Session, user: User, image_path: 
 
 def _client():
     try:
-        from anthropic import Anthropic
+        from google import genai
     except ImportError as e:
-        raise AgentUnavailable("anthropic 미설치 — `pip install anthropic`") from e
-    if not settings.anthropic_api_key:
-        raise AgentUnavailable("ANTHROPIC_API_KEY 미설정")
-    return Anthropic(api_key=settings.anthropic_api_key)
+        raise AgentUnavailable("google-genai 미설치 — `pip install google-genai`") from e
+    if not settings.google_api_key:
+        raise AgentUnavailable("GOOGLE_API_KEY 미설정")
+    return genai.Client(api_key=settings.google_api_key)
+
+
+def _to_contents(history: list[dict] | None, message: str) -> list[dict]:
+    """프런트 히스토리([{role, content}], 텍스트 전용)를 Gemini contents 포맷으로 변환.
+
+    Claude 역할(user/assistant) → Gemini 역할(user/model) 매핑.
+    """
+    contents: list[dict] = []
+    for h in history or []:
+        role = "user" if h.get("role") == "user" else "model"
+        contents.append({"role": role, "parts": [{"text": h.get("content", "")}]})
+    contents.append({"role": "user", "parts": [{"text": message}]})
+    return contents
 
 
 def run_chat(
@@ -125,37 +137,43 @@ def run_chat(
     history: list[dict] | None = None,
     image_path: str | None = None,
 ) -> dict:
+    from google.genai import types
+
     client = _client()
-    messages: list[dict] = list(history or [])
-    messages.append({"role": "user", "content": message})
+    contents = _to_contents(history, message)
     actions: list[dict] = []
 
+    # 함수 호출을 우리가 직접 루프 돌리므로 자동 실행은 끈다.
+    config = types.GenerateContentConfig(
+        system_instruction=_system_prompt(user),
+        tools=[types.Tool(function_declarations=TOOLS)],
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+    )
+
     for _ in range(MAX_TOOL_ROUNDS):
-        resp = client.messages.create(
+        resp = client.models.generate_content(
             model=settings.agent_model,
-            max_tokens=4096,
-            thinking={"type": "adaptive"},
-            system=_system_prompt(user),
-            tools=TOOLS,
-            messages=messages,
+            contents=contents,
+            config=config,
         )
 
-        if resp.stop_reason != "tool_use":
-            text = "".join(b.text for b in resp.content if b.type == "text")
-            return {"reply": text, "actions": actions}
+        candidate = resp.candidates[0] if resp.candidates else None
+        parts = (candidate.content.parts if candidate and candidate.content else None) or []
+        calls = [p.function_call for p in parts if getattr(p, "function_call", None)]
 
-        # 어시스턴트 턴(생각+도구호출 블록)을 그대로 보존해 다시 전달
-        messages.append({"role": "assistant", "content": resp.content})
-        tool_results = []
-        for block in resp.content:
-            if block.type == "tool_use":
-                out = _dispatch(block.name, block.input, db, user, image_path)
-                actions.append({"tool": block.name, "output": out})
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": block.id,
-                    "content": json.dumps(out, ensure_ascii=False),
-                })
-        messages.append({"role": "user", "content": tool_results})
+        if not calls:
+            # 도구 호출이 없으면 최종 답변. .text 는 텍스트 파트만 모아준다.
+            return {"reply": resp.text or "", "actions": actions}
+
+        # 모델 턴(함수 호출 포함)을 그대로 대화에 보존
+        contents.append(candidate.content)
+        response_parts = []
+        for fc in calls:
+            out = _dispatch(fc.name, dict(fc.args or {}), db, user, image_path)
+            actions.append({"tool": fc.name, "output": out})
+            response_parts.append(
+                types.Part.from_function_response(name=fc.name, response=out)
+            )
+        contents.append(types.Content(role="user", parts=response_parts))
 
     return {"reply": "대화가 너무 길어졌습니다. 다시 시도해 주세요.", "actions": actions}

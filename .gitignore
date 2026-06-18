@@ -62,6 +62,9 @@ web/out/
 # 임시 디자인 시안 (scratch)
 _mockup/
 
+# 로컬 포터블 PostgreSQL (검증용, 비추적)
+.pgdev/
+
 # iOS / Xcode
 ios/ObligeApp.xcodeproj/xcuserdata/
 ios/ObligeApp.xcodeproj/project.xcworkspace/xcuserdata/

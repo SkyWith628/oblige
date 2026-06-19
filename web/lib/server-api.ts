@@ -200,6 +200,30 @@ export const updateAdminProduct = (
   patch: { price?: number; stock?: number; is_active?: boolean },
 ) => authedPatch<{ ok: boolean }>(`/api/admin/products/${id}`, patch);
 
+/** 반납 어시스턴트 챗(Gemini) — 인증 필요(multipart). GOOGLE_API_KEY 미설정 시 503 → unavailable. */
+export async function chatAgent(
+  message: string,
+  history: { role: string; content: string }[],
+): Promise<{ ok: boolean; reply?: string; unavailable?: boolean; error?: string }> {
+  const token = await getToken();
+  if (!token) return { ok: false, error: "로그인이 필요합니다" };
+  const fd = new FormData();
+  fd.append("message", message);
+  if (history.length) fd.append("history", JSON.stringify(history));
+  const res = await fetch(`${API_BASE}/api/agent/chat`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: fd,
+    cache: "no-store",
+  });
+  if (res.status === 503) {
+    return { ok: false, unavailable: true, error: await detail(res, "어시스턴트 미가동") };
+  }
+  if (!res.ok) return { ok: false, error: await detail(res, "응답을 받지 못했습니다") };
+  const j = (await res.json()) as { reply?: string };
+  return { ok: true, reply: j.reply ?? "" };
+}
+
 /** YOLO 공병 인식 — 인증 불필요(multipart). 모델 미배포 시 503 → unavailable. */
 export async function detectBottle(
   file: File,

@@ -9,11 +9,11 @@
 
 | 영역 | 기술 | 비고 |
 |---|---|---|
-| 프론트(Web) | Next.js 15 (App Router) + TypeScript | Vercel 배포 |
+| 프론트(Web) | Next.js 16 (App Router) + TypeScript | BFF·httpOnly 쿠키 인증, Vercel 배포 |
 | 모바일 | iOS (Swift) | 사진 업로드 **주력 클라이언트** |
 | 백엔드 | FastAPI (Python) | 비즈니스 API + AI 추론 라우터 통합 |
 | AI 학습 | Ultralytics YOLOv8 + PyTorch (CUDA) | **로컬 RTX 3070(8GB)** 에서 학습 |
-| AI 에이전트 | Claude (tool use) | 반납 어시스턴트 |
+| AI 에이전트 | tool-use LLM — Gemini 2.5 Flash(임시), 원설계 Claude | 반납 어시스턴트 |
 | DB | PostgreSQL | Railway 호스팅 |
 | 배포 | Vercel(web) + Railway(api+db) | 영구 배포 |
 | 컨테이너 | Docker Compose (web·api·db 3개) | 추론은 api 내부 라우터 |
@@ -32,7 +32,7 @@ oblige/
 ├── web/                  Next.js (메인·관리자·마이페이지)
 ├── api/                  FastAPI
 │   └── app/
-│       ├── routers/      auth, products, orders, returns, points, ai, agent
+│       ├── routers/      auth, products, cart, orders, returns, points, ai, agent, admin
 │       ├── models/       Pydantic 스키마
 │       ├── services/     비즈니스 로직 (트랜잭션 규칙)
 │       └── core/         config, security, db 세션
@@ -84,8 +84,9 @@ oblige/
    → 사용자 확인 시 create_return 도구 호출 → 반납 신청 + 포인트
 ```
 
-- LLM: Claude (네이티브 tool use)
-- 도구: `detect_bottle`(YOLO), `get_user_grade`, `create_return`, `get_points`
+- LLM: Gemini 2.5 Flash (임시 운용) — 원설계는 Claude 네이티브 tool use, `agent.py` 내부만 교체
+- 도구: `detect_bottle`(YOLO), `get_membership_status`, `create_return`
+- 웹은 전 페이지 플로팅 챗 위젯(`ChatWidget`)으로 노출, `GOOGLE_API_KEY` 미설정 시 503 폴백
 
 ---
 
@@ -98,9 +99,17 @@ oblige/
 | **2** | PostgreSQL 스키마 (db/schema.sql) — 분기 통합 | ✅ 완료 (PG16 적용 검증, 21테이블) |
 | **3** | FastAPI 코어 (auth + products + `/detect-bottle` 싱글턴) | ✅ 완료 (uvicorn 검증) |
 | **4** | FastAPI 비즈니스 (주문/포인트/반납 트랜잭션) | ✅ 완료 (실거래 통합테스트 22/22 통과) |
-| **5** | Next.js 화면 + 사진 업로드 UI | ⬜ |
-| **6** | AI 에이전트 (반납 어시스턴트, Claude tool use) | ✅ 코드 완료 (실대화는 ANTHROPIC_API_KEY 필요) |
+| **5** | Next.js 화면(와이어프레임 IA) + 사진 업로드 UI | ✅ 완료 (웹 W1~W10·모바일·어드민 E1~E5, 실연동 e2e) |
+| **6** | AI 에이전트 (반납 어시스턴트, tool use) | ✅ 코드 완료 (현재 Gemini, 실대화는 GOOGLE_API_KEY 필요) |
 | **7** | Docker Compose(web+api+db) + CI + Vercel/Railway 배포 구성 | ✅ 구성 완료 (실배포는 Docker/계정 필요) |
+
+### Phase 5 상세 — 웹 표면 (와이어프레임 적용)
+- **페이지 기반 IA**(모달 인증 폐기): 마케팅 8 + 계정 3(로그인/마이페이지/반납) + 어드민 5 라우트.
+- **인증 = BFF**: JWT를 httpOnly 쿠키로, Server Action으로 로그인/가입(성공 시 `redirect("/my")`)·로그아웃.
+- **어드민 콘솔**: `require_admin`(role=admin) 가드 + `api/app/routers/admin.py`(집계·반납검수·회원·굿즈).
+  반납 검수 승인 = `REQUESTED→INSPECTING→APPROVED` 전이 체이닝(공병당 500P 지급·등급 재계산).
+- **반응형**: 920px 이하 햄버거 Nav + 하단 탭바.
+- 데이터는 BFF(`web/lib/server-api.ts`) 경유 실연동, 미구현 영역(거점·임팩트 집계·`/api/grades`)만 정적/목.
 
 > 비즈니스 로직(주문·포인트·반납 트랜잭션 규칙)의 상세 명세는
 > [database-management-design.md](database-management-design.md) 를 따른다.

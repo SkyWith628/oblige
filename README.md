@@ -17,7 +17,7 @@
 ```
 [사용자/iOS] → web(Next.js) → api(FastAPI) → db(PostgreSQL)
                                   │
-                            ai(YOLOv8 공병 인식) · Claude 반납 어시스턴트
+                            ai(YOLOv8 공병 인식) · 반납 어시스턴트(LLM, tool use)
 ```
 
 | 영역 | 기술 |
@@ -27,7 +27,7 @@
 | Backend | FastAPI (Python 3.12) · SQLAlchemy · JWT/bcrypt |
 | Database | PostgreSQL 16 |
 | AI 비전 | Ultralytics YOLOv8 (공병 인식) |
-| AI 에이전트 | Claude (`claude-opus-4-8`, tool use) |
+| AI 에이전트 | tool-use LLM — 현재 Gemini 2.5 Flash(임시), 원설계 Claude(`claude-opus-4-8`) |
 | 배포 | Vercel(web) + Railway(api+db) |
 | DevOps | Docker Compose · GitHub Actions |
 
@@ -39,7 +39,8 @@
 - **신뢰 경계를 서버에** — 가격·적립·등급 계산을 클라이언트가 아닌 **서버에서 재확정**해 포인트·재고가 조작되지 않도록 설계.
 - **원장 분리** — `point_transactions`·`inventory_transactions`를 원장으로 두고, `total_point`·`stock`은 조회용 캐시로 분리해 추적성과 무결성 확보.
 - **인증/권한** — Supabase 의존을 걷어내고 FastAPI에서 **JWT + bcrypt**로 직접 인증, 관리자 권한을 앱 계층에서 분리.
-- **AI 통합** — 공병 인식을 추론 서비스로 분리(모델 싱글턴 로딩), **학습(GPU)/서빙(CPU) 분리**. 반납 어시스턴트는 Claude가 탐지·등급조회·반납신청을 도구로 호출.
+- **AI 통합** — 공병 인식을 추론 서비스로 분리(모델 싱글턴 로딩), **학습(GPU)/서빙(CPU) 분리**. 반납 어시스턴트는 LLM이 탐지·등급조회·반납신청을 도구로 호출(현재 Gemini 2.5 Flash로 임시 운용, 원설계 Claude tool use).
+- **BFF 인증** — 웹은 FastAPI를 직접 부르지 않고 Next 서버를 경유. JWT를 **httpOnly 쿠키**로 보관(localStorage 미사용 → XSS 방어), 서버 컴포넌트에서 Bearer로 변환.
 
 ## 📁 디렉토리
 
@@ -71,7 +72,7 @@ docker compose up -d --build
 #   web: cd web && npm install && npm run dev
 ```
 
-AI 추론(`/api/ai/*`)은 `pip install ultralytics`, 반납 어시스턴트(`/api/agent/chat`)는 `.env`에 `ANTHROPIC_API_KEY` 필요.
+AI 추론(`/api/ai/*`)은 `pip install ultralytics` + YOLO 가중치, 반납 어시스턴트(`/api/agent/chat`)는 `.env`에 `GOOGLE_API_KEY`(Gemini, 임시) 필요. 미설정 시 해당 기능만 비활성(503)되고 나머지는 정상 동작.
 
 ## ♻️ 순환형 ESG 시스템
 
@@ -86,10 +87,21 @@ AI 추론(`/api/ai/*`)은 `pip install ultralytics`, 반납 어시스턴트(`/ap
 | 🌳 Tree | 공병 7개 | 굿즈 · +20% · 리필 쿠폰 |
 | 🌲 Forest | 공병 15개 | 리필 무료 · 앰배서더 |
 
-## 🔌 주요 API (17개 엔드포인트)
+## 🖥️ 웹 화면 (와이어프레임 기반, 페이지 라우팅)
+
+- **서비스** — 홈(`/`) · 브랜드 스토리(`/about`) · 이용 방법(`/how-it-works`) · 수거함 찾기(`/find`) · 굿즈 샵(`/shop`)·굿즈 상세(`/shop/[id]`) · 임팩트(`/impact`) · 리필 구독(`/refill`)
+- **계정** — 로그인/회원가입(`/login`) · 마이페이지 대시보드(`/my`, 주문·반납·포인트 탭) · 공병 반납 신청(`/return`, 사진 업로드→AI 인식)
+- **어드민 콘솔**(`/admin`, role=admin) — 운영 대시보드 · **반납 검수(승인 시 포인트 지급)** · 회원 · 굿즈·재고(노출 토글) · 수거함·매장
+- **반응형** — 920px 이하 햄버거 Nav + 하단 탭바, 전 화면 모바일 대응
+- **반납 어시스턴트 챗** — 전 페이지 플로팅 위젯(tool-use LLM)
+
+데이터는 항상 `web/lib/api.ts`/`server-api.ts`(BFF)를 경유하며 실제 PostgreSQL과 연동(미연동 영역만 정적/목 폴백).
+
+## 🔌 주요 API
 
 `auth(가입/로그인/내정보)` · `products` · `cart` · `orders(생성·취소, 재고·포인트 원장)` ·
-`returns(반납 신청·관리자 승인)` · `points` · `ai/detect-bottle(YOLO)` · `agent/chat(반납 어시스턴트)`
+`returns(반납 신청·관리자 상태전이)` · `points` · `ai/detect-bottle(YOLO)` · `agent/chat(반납 어시스턴트)` ·
+`admin(대시보드 집계·반납 목록·회원·굿즈)`
 
 핵심 규칙: 서버 측 가격·재고 재확정 · 멱등키 중복지급 방지 · 상태 전이 검증 · 원장 분리(포인트·재고).
 

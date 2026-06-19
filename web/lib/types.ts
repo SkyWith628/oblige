@@ -99,6 +99,16 @@ export interface AdminReturn {
   user_grade: string | null;
 }
 
+export interface AdminProduct {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  low_stock_threshold: number;
+  is_active: boolean;
+}
+
 export interface AdminUser {
   id: number;
   name: string;

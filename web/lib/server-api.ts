@@ -13,6 +13,7 @@ import type {
   AdminStats,
   AdminReturn,
   AdminUser,
+  AdminProduct,
 } from "./types";
 
 // 서버↔서버 호출이므로 내부 주소 우선. (NEXT_PUBLIC_* 는 클라이언트 노출용이라 폴백으로만)
@@ -147,6 +148,8 @@ export const getAdminReturns = (status?: string) =>
     `/api/admin/returns${status ? `?status=${status}` : ""}`,
   );
 export const getAdminUsers = () => authedGet<AdminUser[]>("/api/admin/users");
+export const getAdminProducts = () =>
+  authedGet<AdminProduct[]>("/api/admin/products");
 
 /** 인증이 필요한 PATCH(JSON). */
 async function authedPatch<T>(
@@ -190,6 +193,12 @@ export async function approveReturn(id: number) {
 /** 반납 반려 — REQUESTED→REJECTED. */
 export const rejectReturn = (id: number, reason = "반려") =>
   transitionReturn(id, "REJECTED", { reason });
+
+/** E4 상품 수정 — 가격/재고/노출. */
+export const updateAdminProduct = (
+  id: number,
+  patch: { price?: number; stock?: number; is_active?: boolean },
+) => authedPatch<{ ok: boolean }>(`/api/admin/products/${id}`, patch);
 
 /** YOLO 공병 인식 — 인증 불필요(multipart). 모델 미배포 시 503 → unavailable. */
 export async function detectBottle(

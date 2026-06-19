@@ -229,6 +229,48 @@
   border-color: var(--navy);
 }
 
+/* E4 노출 토글 / 재고 */
+.toggle {
+  border: none;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.toggleOn {
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--success);
+}
+.toggleOff {
+  background: #f1f1f4;
+  color: var(--muted);
+}
+.low {
+  color: var(--pink);
+  font-weight: 700;
+}
+
+/* E5 적재율 */
+.fillWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fillBar {
+  flex: 1;
+  max-width: 120px;
+  height: 8px;
+  border-radius: 100px;
+  background: var(--off);
+  overflow: hidden;
+}
+.fillVal {
+  height: 100%;
+  border-radius: 100px;
+}
+
 @media (max-width: 880px) {
   .shell {
     grid-template-columns: 1fr;

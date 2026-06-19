@@ -1,11 +1,12 @@
-"""어드민 운영 콘솔 — 대시보드 집계·반납 검수 목록·회원 목록 (require_admin)."""
-from fastapi import APIRouter, Depends, Query
+"""어드민 운영 콘솔 — 대시보드 집계·반납 검수·회원·굿즈 재고 (require_admin)."""
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..core.db import get_db
 from ..deps import require_admin
-from ..models import EmptyBottleReturn, PointTransaction, User
+from ..models import Category, EmptyBottleReturn, PointTransaction, Product, User
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -61,6 +62,54 @@ def list_returns(
             }
         )
     return out
+
+
+@router.get("/products")
+def list_products(_: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """E4 굿즈·재고 — 활성/비활성 포함 전체 상품 + 카테고리명."""
+    cats = {c.id: c.name for c in db.scalars(select(Category))}
+    low_threshold = 10  # 모델에 low_stock_threshold 미매핑 → 고정 임계값 사용
+    out = []
+    for p in db.scalars(select(Product).order_by(Product.sort_order, Product.id)):
+        out.append(
+            {
+                "id": p.id,
+                "name": p.name,
+                "category": cats.get(p.category_id, "굿즈"),
+                "price": p.price,
+                "stock": p.stock,
+                "low_stock_threshold": low_threshold,
+                "is_active": p.is_active,
+            }
+        )
+    return out
+
+
+class ProductAdminUpdate(BaseModel):
+    price: int | None = None
+    stock: int | None = None
+    is_active: bool | None = None
+
+
+@router.patch("/products/{product_id}")
+def update_product(
+    product_id: int,
+    data: ProductAdminUpdate,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """E4 — 가격/재고/노출 수정."""
+    p = db.get(Product, product_id)
+    if p is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "상품을 찾을 수 없습니다")
+    if data.price is not None:
+        p.price = data.price
+    if data.stock is not None:
+        p.stock = data.stock
+    if data.is_active is not None:
+        p.is_active = data.is_active
+    db.commit()
+    return {"ok": True}
 
 
 @router.get("/users")

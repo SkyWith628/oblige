@@ -9,6 +9,8 @@ export interface StoreLocation {
   distanceKm: number;
   address: string;
   hours: string;
+  /** 무인 수거함 적재율(%) — E5 어드민용 placeholder(백엔드 미연동). */
+  fillRate: number;
 }
 
 export const locations: StoreLocation[] = [
@@ -19,6 +21,7 @@ export const locations: StoreLocation[] = [
     distanceKm: 0.4,
     address: "서울 성동구 연무장길",
     hours: "매일 11–20시",
+    fillRate: 42,
   },
   {
     id: "gangnam-a",
@@ -27,6 +30,7 @@ export const locations: StoreLocation[] = [
     distanceKm: 1.1,
     address: "서울 강남구 테헤란로",
     hours: "24시간",
+    fillRate: 88,
   },
   {
     id: "hongdae",
@@ -35,6 +39,7 @@ export const locations: StoreLocation[] = [
     distanceKm: 2.3,
     address: "서울 마포구 양화로",
     hours: "12–21시",
+    fillRate: 25,
   },
   {
     id: "yeouido-b",
@@ -43,6 +48,7 @@ export const locations: StoreLocation[] = [
     distanceKm: 3.0,
     address: "서울 영등포구 국제금융로",
     hours: "24시간",
+    fillRate: 100,
   },
   {
     id: "jamsil",
@@ -51,6 +57,7 @@ export const locations: StoreLocation[] = [
     distanceKm: 4.2,
     address: "서울 송파구 올림픽로",
     hours: "매일 10–21시",
+    fillRate: 38,
   },
   {
     id: "yongsan-c",
@@ -59,5 +66,6 @@ export const locations: StoreLocation[] = [
     distanceKm: 5.1,
     address: "서울 용산구 한강대로",
     hours: "24시간",
+    fillRate: 67,
   },
 ];

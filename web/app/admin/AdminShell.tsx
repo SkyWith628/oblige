@@ -7,8 +7,9 @@ const NAV = [
   { key: "dashboard", label: "대시보드", href: "/admin" },
   { key: "returns", label: "반납 검수", href: "/admin/returns" },
   { key: "members", label: "회원 관리", href: "/admin/members" },
+  { key: "goods", label: "굿즈 · 재고", href: "/admin/goods" },
+  { key: "locations", label: "수거함 · 매장", href: "/admin/locations" },
 ];
-const SOON = ["굿즈 · 재고", "수거함 · 매장"];
 
 export default function AdminShell({
   active,
@@ -41,11 +42,6 @@ export default function AdminShell({
               <span className={styles.badge}>{pending}</span>
             )}
           </Link>
-        ))}
-        {SOON.map((s) => (
-          <span key={s} className={`${styles.navItem} ${styles.disabled}`}>
-            {s}
-          </span>
         ))}
         <form action={logoutAction} className={styles.logout}>
           <button className={styles.navItem} type="submit" style={{ width: "100%" }}>

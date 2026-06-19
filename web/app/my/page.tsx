@@ -2,6 +2,7 @@
 // 미로그인 시 /login 으로 redirect(보호 라우트). 데이터는 getMypageData() 재사용.
 import { redirect } from "next/navigation";
 import Nav from "@/components/layout/Nav";
+import BottomTab from "@/components/layout/BottomTab";
 import { getMypageData, logoutAction } from "@/app/actions/auth";
 import styles from "./my.module.css";
 
@@ -154,6 +155,7 @@ export default async function MyPage() {
           </div>
         </main>
       </div>
+      <BottomTab />
     </>
   );
 }

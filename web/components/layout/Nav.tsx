@@ -2,6 +2,7 @@ import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import { getToken } from "@/lib/session";
 import NavActions from "@/components/layout/NavActions";
+import MobileMenu from "@/components/layout/MobileMenu";
 
 // 와이어프레임 글로벌 내비게이션 — 실 라우트로 연결.
 const LINKS: { label: string; href: string }[] = [
@@ -30,6 +31,7 @@ export default async function Nav() {
           ))}
         </ul>
         <NavActions loggedIn={loggedIn} />
+        <MobileMenu loggedIn={loggedIn} />
       </div>
     </nav>
   );

@@ -1,0 +1,116 @@
+/* W3 이용 방법 — 4스텝 + 가능/불가 품목 + FAQ. */
+.head {
+  background: var(--sand);
+  padding: 96px 0 84px;
+  text-align: center;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: 56px;
+}
+.step {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 30px 22px;
+  text-align: left;
+}
+.stepNo {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--pink);
+}
+.step h4 {
+  font-size: 17px;
+  font-weight: 800;
+  margin: 12px 0 8px;
+}
+.step p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* 가능/불가 */
+.lists {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin-top: 8px;
+}
+.listCard {
+  border-radius: 20px;
+  padding: 32px 30px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.ok {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+.no {
+  border-color: rgba(237, 33, 138, 0.3);
+}
+.listCard h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+.listCard ul {
+  list-style: none;
+}
+.listCard li {
+  font-size: 14px;
+  color: #4b4a5e;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+/* FAQ */
+.faq {
+  max-width: 760px;
+  margin: 50px auto 0;
+}
+.faqItem {
+  border-bottom: 1px solid var(--line);
+}
+.faqQ {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  padding: 22px 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.faqSign {
+  color: var(--pink);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.faqA {
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height: 1.8;
+  padding: 0 4px 22px;
+}
+
+@media (max-width: 880px) {
+  .steps {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lists {
+    grid-template-columns: 1fr;
+  }
+}

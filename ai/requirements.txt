@@ -1,0 +1,29 @@
+# AI / LLM
+google-generativeai>=0.8.0
+
+# 크롤링
+selenium>=4.18.0
+webdriver-manager>=4.0.0
+requests>=2.31.0
+
+# 이미지 처리
+opencv-python>=4.9.0
+Pillow>=10.2.0
+numpy>=1.26.0
+
+# YOLO 모델
+ultralytics>=8.1.0
+
+# API 서버
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-multipart>=0.0.9
+
+# 라벨링 UI
+flask>=3.0.0
+
+# 데이터베이스
+sqlalchemy>=2.0.0
+
+# 환경변수
+python-dotenv>=1.0.0

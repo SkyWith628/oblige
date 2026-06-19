@@ -1,0 +1,107 @@
+/* W5 굿즈 샵 — 좌 필터 + 우 그리드. 카드는 globals .card 재사용. */
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.point {
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: 100px;
+}
+.point b {
+  color: var(--pink2);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+/* 필터 */
+.filters {
+  position: sticky;
+  top: 98px;
+}
+.filterGroup {
+  margin-bottom: 28px;
+}
+.filterTitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+.chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: 0.2s;
+}
+.chip:hover {
+  color: var(--pink);
+}
+.chipOn {
+  background: var(--navy);
+  color: #fff;
+}
+.chipOn:hover {
+  color: #fff;
+}
+.sort {
+  font-family: var(--font);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  padding: 60px 0;
+  text-align: center;
+}
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .filters {
+    position: static;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+  }
+  .filterGroup {
+    margin-bottom: 0;
+  }
+}

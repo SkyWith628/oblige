@@ -2,16 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "oblige",
-      "runtimeExecutable": "php",
-      "runtimeArgs": ["-S", "localhost:8001", "router.php"],
-      "port": 8001
-    },
-    {
-      "name": "preview",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-l", "8002", "."],
-      "port": 8002
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "web",
+      "port": 3000
     }
   ]
 }

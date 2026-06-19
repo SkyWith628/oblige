@@ -1,0 +1,11 @@
+path: dataset
+train: images/train
+val: images/val
+
+nc: 5
+names:
+  0: 토너
+  1: 앰플
+  2: 크림
+  3: 선크림
+  4: 에센스

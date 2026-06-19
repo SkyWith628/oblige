@@ -1,6 +1,6 @@
 # 환경 설정 (절대 커밋 금지)
-api/config/db.php
-api/config/figma.php
+legacy/api-php/config/db.php
+legacy/api-php/config/figma.php
 .env
 .env.local
 
@@ -40,6 +40,30 @@ uploads/
 # 로그
 *.log
 error_log
+
+# Python (ai/ · api/)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# AI 모델/학습 (대용량 — best.pt는 별도 관리)
+ai/yolov8n.pt
+ai/runs/**/last.pt
+
+# Next.js (web/)
+web/node_modules/
+web/.next/
+web/out/
+
+# 임시 디자인 시안 (scratch)
+_mockup/
+
+# 로컬 포터블 PostgreSQL (검증용, 비추적)
+.pgdev/
 
 # iOS / Xcode
 ios/ObligeApp.xcodeproj/xcuserdata/

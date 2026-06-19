@@ -1,0 +1,18 @@
+# OBLIGE API — Python 3.11/3.12 (3.14 미지원 라이브러리 있음)
+fastapi>=0.115
+uvicorn[standard]>=0.30
+sqlalchemy>=2.0
+alembic>=1.13
+psycopg[binary]>=3.2
+pydantic-settings>=2.4
+pydantic[email]>=2.8
+PyJWT>=2.9
+bcrypt>=4.2
+python-multipart>=0.0.9
+google-genai>=1.0   # 반납 어시스턴트 LLM (임시: Gemini 2.5 Flash. 원래는 anthropic>=0.40)
+
+# ── AI 추론 (무거움 ~2GB, 별도 설치) ──────────────────────
+# 학습/서빙 시에만 설치. 미설치 시 /api/ai/* 는 503 반환.
+#   pip install ultralytics
+# GPU(RTX 3070) 학습은 ai/ 의 venv에서:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121

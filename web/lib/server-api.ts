@@ -3,7 +3,7 @@
 // 인증 호출은 쿠키의 JWT를 읽어 Authorization: Bearer 로 변환해 붙인다.
 import "server-only";
 import { getToken } from "./session";
-import type { User, Balance, PointTx, Return } from "./types";
+import type { User, Balance, PointTx, Return, Order } from "./types";
 
 // 서버↔서버 호출이므로 내부 주소 우선. (NEXT_PUBLIC_* 는 클라이언트 노출용이라 폴백으로만)
 const API_BASE =
@@ -81,3 +81,37 @@ export const getMe = () => authedGet<User>("/api/auth/me");
 export const getBalance = () => authedGet<Balance>("/api/points/balance");
 export const getPointHistory = () => authedGet<PointTx[]>("/api/points");
 export const getMyReturns = () => authedGet<Return[]>("/api/returns");
+export const getMyOrders = () => authedGet<Order[]>("/api/orders");
+
+/** 인증이 필요한 POST(JSON). 토큰 없으면 ok:false. */
+async function authedPost<T>(
+  path: string,
+  body: unknown,
+): Promise<{ ok: boolean; data?: T; error?: string }> {
+  const token = await getToken();
+  if (!token) return { ok: false, error: "로그인이 필요합니다" };
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) return { ok: false, error: await detail(res, "요청에 실패했습니다") };
+  return { ok: true, data: (await res.json()) as T };
+}
+
+/** 주문 생성 — items[{product_id, quantity}], 포인트 사용액, 배송지. */
+export function createOrder(
+  items: { product_id: number; quantity: number }[],
+  usedPoint = 0,
+  deliveryAddress?: string,
+) {
+  return authedPost<Order>("/api/orders", {
+    items,
+    used_point: usedPoint,
+    delivery_address: deliveryAddress ?? null,
+  });
+}

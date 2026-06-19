@@ -1,6 +1,7 @@
 "use client";
 // W5 굿즈 샵 — 클라이언트 필터(카테고리/정렬). 그리드는 props 로 받은 실데이터.
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { Product } from "@/lib/types";
 import styles from "./shop.module.css";
 
@@ -59,7 +60,7 @@ export default function ShopClient({ products }: { products: Product[] }) {
         {list.length ? (
           <div className="prod-grid">
             {list.map((p) => (
-              <article className="card" key={p.id}>
+              <Link className="card" href={`/shop/${p.id}`} key={p.id}>
                 <div className="card-img">
                   <span className="em">{p.emoji}</span>
                   {p.tag && (
@@ -74,12 +75,9 @@ export default function ShopClient({ products }: { products: Product[] }) {
                   <div className="desc">{p.description}</div>
                   <div className="card-foot">
                     <span className="price">{won(p.price)}</span>
-                    <button className="add" aria-label={`${p.name} 담기`}>
-                      +
-                    </button>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         ) : (

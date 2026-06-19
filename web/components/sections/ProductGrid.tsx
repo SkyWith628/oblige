@@ -36,7 +36,7 @@ export default function ProductGrid({
         </div>
         <div className={`prod-grid${four ? " four" : ""}`}>
           {list.map((p) => (
-            <article className="card" key={p.id}>
+            <Link className="card" href={`/shop/${p.id}`} key={p.id}>
               <div className="card-img">
                 <span className="em">{p.emoji}</span>
                 {p.tag && (
@@ -51,12 +51,9 @@ export default function ProductGrid({
                 <div className="desc">{p.description}</div>
                 <div className="card-foot">
                   <span className="price">{price(p.price)}</span>
-                  <button className="add" aria-label={`${p.name} 담기`}>
-                    +
-                  </button>
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>

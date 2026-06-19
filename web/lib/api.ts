@@ -28,6 +28,7 @@ interface RawProduct {
   category_id: number;
   name: string;
   price: number;
+  stock?: number;
   description?: string | null;
   is_vegan: boolean;
 }
@@ -58,12 +59,20 @@ function mapProduct(r: RawProduct): Product {
     emoji: CATEGORY_EMOJI[r.category_id] ?? "🧴",
     vegan: r.is_vegan,
     tag: r.is_vegan ? "VEGAN" : undefined,
+    stock: r.stock,
   };
 }
 
 export async function getProducts(): Promise<Product[]> {
   const raw = await get<RawProduct[] | null>("/api/products", null);
   return raw && raw.length ? raw.map(mapProduct) : mockProducts;
+}
+
+/** 상품 단건(W6 상세) — 미존재 시 null. */
+export async function getProduct(id: string): Promise<Product | null> {
+  const raw = await get<RawProduct | null>(`/api/products/${id}`, null);
+  if (raw) return mapProduct(raw);
+  return mockProducts.find((p) => p.id === id) ?? null;
 }
 
 export function getMembershipTiers(): Promise<MembershipTier[]> {

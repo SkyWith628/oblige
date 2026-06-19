@@ -15,6 +15,7 @@ const COLS: { h: string; items: { label: string; href: string }[] }[] = [
     h: "리워드",
     items: [
       { label: "굿즈 샵", href: "/shop" },
+      { label: "리필 구독", href: "/refill" },
       { label: "임팩트", href: "/impact" },
       { label: "마이페이지", href: "/my" },
     ],

@@ -15,6 +15,8 @@ export interface Product {
   emoji: string;
   tag?: ProductTag;
   vegan: boolean;
+  /** 재고 (상세/구매 수량 상한). 목데이터는 미지정. */
+  stock?: number;
 }
 
 export interface MembershipTier {
@@ -74,6 +76,31 @@ export interface PointTx {
   tx_type: string;
   reason: string | null;
   created_at: string;
+}
+
+/** OrderItemOut */
+export interface OrderItem {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+}
+
+/** POST/GET /api/orders → OrderOut */
+export interface Order {
+  id: number;
+  order_number: string;
+  total_price: number;
+  used_point: number;
+  earned_point: number;
+  shipping_fee: number;
+  final_price: number;
+  order_status: string;
+  delivery_address: string | null;
+  tracking_number: string | null;
+  created_at: string;
+  items: OrderItem[];
 }
 
 /** GET /api/returns → ReturnOut[] */

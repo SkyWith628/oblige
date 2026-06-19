@@ -78,6 +78,38 @@ export interface PointTx {
   created_at: string;
 }
 
+// ── 어드민 콘솔 ────────────────────────────────────────
+export interface AdminStats {
+  pending_returns: number;
+  members: number;
+  total_returns: number;
+  issued_points: number;
+}
+
+export interface AdminReturn {
+  id: number;
+  return_number: string;
+  bottle_count: number;
+  return_method: string;
+  return_status: string;
+  approved_point: number;
+  created_at: string;
+  user_name: string | null;
+  user_email: string | null;
+  user_grade: string | null;
+}
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  grade: string;
+  total_point: number;
+  bottle_return_count: number;
+  is_active: boolean;
+  created_at: string;
+}
+
 /** POST /api/ai/detect-bottle → DetectResult */
 export interface DetectResult {
   detections: { label: string; confidence: number; box: number[] }[];

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import settings
-from .routers import agent, ai, auth, cart, orders, points, products, returns
+from .routers import admin, agent, ai, auth, cart, orders, points, products, returns
 
 app = FastAPI(
     title="OBLIGE API",
@@ -33,3 +33,4 @@ app.include_router(returns.router)
 app.include_router(points.router)
 app.include_router(ai.router)
 app.include_router(agent.router)
+app.include_router(admin.router)

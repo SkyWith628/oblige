@@ -3,7 +3,17 @@
 // 인증 호출은 쿠키의 JWT를 읽어 Authorization: Bearer 로 변환해 붙인다.
 import "server-only";
 import { getToken } from "./session";
-import type { User, Balance, PointTx, Return, Order, DetectResult } from "./types";
+import type {
+  User,
+  Balance,
+  PointTx,
+  Return,
+  Order,
+  DetectResult,
+  AdminStats,
+  AdminReturn,
+  AdminUser,
+} from "./types";
 
 // 서버↔서버 호출이므로 내부 주소 우선. (NEXT_PUBLIC_* 는 클라이언트 노출용이라 폴백으로만)
 const API_BASE =
@@ -129,6 +139,57 @@ export function createReturn(
     ai_detection: aiDetection,
   });
 }
+
+// ── 어드민 ────────────────────────────────────────────
+export const getAdminStats = () => authedGet<AdminStats>("/api/admin/stats");
+export const getAdminReturns = (status?: string) =>
+  authedGet<AdminReturn[]>(
+    `/api/admin/returns${status ? `?status=${status}` : ""}`,
+  );
+export const getAdminUsers = () => authedGet<AdminUser[]>("/api/admin/users");
+
+/** 인증이 필요한 PATCH(JSON). */
+async function authedPatch<T>(
+  path: string,
+  body: unknown,
+): Promise<{ ok: boolean; data?: T; error?: string }> {
+  const token = await getToken();
+  if (!token) return { ok: false, error: "로그인이 필요합니다" };
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) return { ok: false, error: await detail(res, "요청에 실패했습니다") };
+  return { ok: true, data: (await res.json()) as T };
+}
+
+function transitionReturn(
+  id: number,
+  target: string,
+  opts?: { reason?: string; approvedPoint?: number },
+) {
+  return authedPatch<Return>(`/api/returns/${id}/status`, {
+    target_status: target,
+    reason: opts?.reason ?? null,
+    approved_point: opts?.approvedPoint ?? null,
+  });
+}
+
+/** 반납 승인 — REQUESTED→INSPECTING→APPROVED 체이닝(서버가 공병당 500P 자동 산정). */
+export async function approveReturn(id: number) {
+  const a = await transitionReturn(id, "INSPECTING");
+  if (!a.ok) return a;
+  return transitionReturn(id, "APPROVED");
+}
+
+/** 반납 반려 — REQUESTED→REJECTED. */
+export const rejectReturn = (id: number, reason = "반려") =>
+  transitionReturn(id, "REJECTED", { reason });
 
 /** YOLO 공병 인식 — 인증 불필요(multipart). 모델 미배포 시 503 → unavailable. */
 export async function detectBottle(

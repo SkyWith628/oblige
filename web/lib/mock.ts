@@ -3,9 +3,9 @@
 import type { Product, MembershipTier, CycleStep, Story, Stat } from "./types";
 
 export const heroStats: Stat[] = [
-  { value: "12,400", label: "반납된 공병" },
-  { value: "100%", label: "비건 인증 제품" },
-  { value: "3.2t", label: "절감한 플라스틱" },
+  { value: "128,400", label: "누적 반납 공병" },
+  { value: "4.8t", label: "플라스틱 절감" },
+  { value: "31,200", label: "참여 회원" },
 ];
 
 export const cycleSteps: CycleStep[] = [

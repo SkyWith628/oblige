@@ -1,9 +1,10 @@
 "use server";
-// 인증 Server Actions (모달용) — 폼 제출이 서버에서 실행돼 자격증명이 클라이언트에 안 남는다.
-// 구 사이트가 모달 기반이므로 redirect 대신 결과({ok|error})를 반환하고,
-// 성공 후 닫기/새로고침은 클라이언트가 처리한다.
+// 인증 Server Actions — 폼 제출이 서버에서 실행돼 자격증명이 클라이언트에 안 남는다.
+// login/register 는 결과({ok|error})를 반환하고, 성공 후 이동은 호출 측(로그인 페이지)이
+// router.push("/my")로 처리한다. logout 은 쿠키 삭제 후 "/"로 redirect.
 import { login, register, getMe, getPointHistory, getMyReturns } from "@/lib/server-api";
 import { setSession, clearSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 import type { User, PointTx, Return } from "@/lib/types";
 
 export interface FormState {
@@ -27,7 +28,7 @@ export async function loginAction(
   if (!res.ok || !res.token) return { error: res.error ?? "로그인 실패" };
 
   await setSession(res.token);
-  return { ok: true };
+  redirect("/my"); // 성공 시 서버에서 직접 이동(클라이언트 redirect보다 견고)
 }
 
 export async function registerAction(
@@ -49,11 +50,12 @@ export async function registerAction(
     return { error: "가입은 됐지만 자동 로그인에 실패했습니다. 로그인해 주세요." };
   }
   await setSession(res.token);
-  return { ok: true };
+  redirect("/my");
 }
 
 export async function logoutAction(): Promise<void> {
   await clearSession();
+  redirect("/");
 }
 
 export interface MypageData {
@@ -62,7 +64,7 @@ export interface MypageData {
   returns: Return[];
 }
 
-/** 마이페이지 모달이 열릴 때 호출 — 쿠키 토큰으로 인증 데이터 조회. 미로그인 시 null. */
+/** 마이페이지(/my) 에서 호출 — 쿠키 토큰으로 인증 데이터 조회. 미로그인 시 null. */
 export async function getMypageData(): Promise<MypageData | null> {
   const [user, points, returns] = await Promise.all([
     getMe(),

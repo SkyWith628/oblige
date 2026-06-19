@@ -1,37 +1,28 @@
-import Nav from "@/components/layout/Nav";
-import Footer from "@/components/layout/Footer";
+import SiteShell from "@/components/layout/SiteShell";
 import Hero from "@/components/sections/Hero";
 import MarqueeBar from "@/components/sections/MarqueeBar";
-import PhilosophySection from "@/components/sections/PhilosophySection";
-import CycleSection from "@/components/sections/CycleSection";
+import StepsBand from "@/components/sections/StepsBand";
 import ProductGrid from "@/components/sections/ProductGrid";
-import StoriesGrid from "@/components/sections/StoriesGrid";
-import MembershipTiers from "@/components/sections/MembershipTiers";
-import CTASection from "@/components/sections/CTASection";
-import { getProducts, getMembershipTiers } from "@/lib/api";
-import { heroStats, cycleSteps, stories } from "@/lib/mock";
+import { getProducts } from "@/lib/api";
+import { heroStats } from "@/lib/mock";
 
-// 서버 컴포넌트 — 데이터는 api 레이어를 통해 주입(현재는 목업 폴백).
+// W1 랜딩 — 와이어프레임 구조: 히어로(2 CTA) → 통계밴드 → 3단계 → 포인트로 바꾸는 굿즈.
 export default async function Home() {
-  const [products, tiers] = await Promise.all([
-    getProducts(),
-    getMembershipTiers(),
-  ]);
+  const products = await getProducts();
 
   return (
-    <>
-      <Nav />
-      <main>
-        <Hero stats={heroStats} />
-        <MarqueeBar />
-        <PhilosophySection />
-        <CycleSection steps={cycleSteps} />
-        <ProductGrid products={products} />
-        <StoriesGrid stories={stories} />
-        <MembershipTiers tiers={tiers} />
-        <CTASection />
-      </main>
-      <Footer />
-    </>
+    <SiteShell>
+      <Hero stats={heroStats} />
+      <MarqueeBar />
+      <StepsBand />
+      <ProductGrid
+        products={products}
+        eyebrow="Reward Goods"
+        title="포인트로 바꾸는 굿즈"
+        ctaHref="/shop"
+        limit={4}
+        four
+      />
+    </SiteShell>
   );
 }

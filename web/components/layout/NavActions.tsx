@@ -1,59 +1,33 @@
-"use client";
-// Nav 의 인터랙티브 영역 — 로그인/마이페이지 버튼 + 모달 상태 관리.
-// 로그인 상태(loggedIn)는 서버(쿠키)에서 받아오고, 모달 성공/로그아웃 후
-// router.refresh()로 서버 컴포넌트(Nav)를 다시 그려 상태를 갱신한다.
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import AuthModal from "@/components/auth/AuthModal";
-import MypageModal from "@/components/auth/MypageModal";
+// Nav 의 우측 액션 영역 — 로그인 상태에 따라 링크/버튼을 분기.
+// 모달 폐기 후 페이지 라우팅 방식이라 클라이언트 상태가 필요 없다 → 서버 컴포넌트.
+// 로그아웃은 server action(form)으로 처리하고 logoutAction 내부에서 "/"로 redirect.
+import Link from "next/link";
+import { logoutAction } from "@/app/actions/auth";
 
 export default function NavActions({ loggedIn }: { loggedIn: boolean }) {
-  const router = useRouter();
-  const [authOpen, setAuthOpen] = useState(false);
-  const [authTab, setAuthTab] = useState<"login" | "register">("login");
-  const [mpOpen, setMpOpen] = useState(false);
-
-  function openAuth(tab: "login" | "register" = "login") {
-    setAuthTab(tab);
-    setAuthOpen(true);
-  }
-
   return (
-    <>
-      <div className="nav-cta">
-        {loggedIn ? (
-          <button className="btn btn-ghost" onClick={() => setMpOpen(true)}>
+    <div className="nav-cta">
+      {loggedIn ? (
+        <>
+          <Link className="btn btn-ghost" href="/my">
             마이페이지
-          </button>
-        ) : (
-          <>
-            <button className="btn btn-ghost" onClick={() => openAuth("login")}>
-              로그인
+          </Link>
+          <form action={logoutAction}>
+            <button className="btn btn-ghost" type="submit">
+              로그아웃
             </button>
-            <button className="btn btn-pink" onClick={() => openAuth("register")}>
-              시작하기
-            </button>
-          </>
-        )}
-      </div>
-
-      <AuthModal
-        open={authOpen}
-        initialTab={authTab}
-        onClose={() => setAuthOpen(false)}
-        onSuccess={() => {
-          setAuthOpen(false);
-          router.refresh();
-        }}
-      />
-      <MypageModal
-        open={mpOpen}
-        onClose={() => setMpOpen(false)}
-        onLogout={() => {
-          setMpOpen(false);
-          router.refresh();
-        }}
-      />
-    </>
+          </form>
+        </>
+      ) : (
+        <>
+          <Link className="btn btn-ghost" href="/login">
+            로그인
+          </Link>
+          <Link className="btn btn-pink" href="/how-it-works">
+            앱으로 시작
+          </Link>
+        </>
+      )}
+    </div>
   );
 }

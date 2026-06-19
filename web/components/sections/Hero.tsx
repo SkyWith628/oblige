@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Stat } from "@/lib/types";
 
 export default function Hero({ stats }: { stats: Stat[] }) {
@@ -7,21 +8,23 @@ export default function Hero({ stats }: { stats: Stat[] }) {
       <div className="hero-glow" />
       <div className="hero-in">
         <div>
-          <span className="eyebrow">Vegan · Sustainable · ESG</span>
+          <span className="eyebrow">Vegan · Circular · Reward</span>
           <h1>
-            아름다움은
+            공병이 다시
             <br />
-            <em>되돌려주는 것</em>에서
-            <br />
-            시작됩니다.
+            <em>돌아오는</em> 곳
           </h1>
           <p>
-            비건 화장품을 쓰고, 공병을 반납하면 AI가 알아서 인식해 포인트로
-            돌려드립니다. 지구를 해치지 않는 아름다움.
+            다 쓴 화장품 공병을 반납하면 포인트로 돌려드려요. 모은 포인트로
+            리필하고, 굿즈로 바꾸고, 지구도 함께 지켜요.
           </p>
           <div className="hero-btns">
-            <button className="btn btn-pink btn-lg">제품 둘러보기</button>
-            <button className="btn btn-ghost btn-lg hero-ghost">공병 반납하기</button>
+            <Link className="btn btn-pink btn-lg" href="/find">
+              공병 반납 시작하기
+            </Link>
+            <Link className="btn btn-ghost btn-lg hero-ghost" href="/how-it-works">
+              작동 방식 보기 →
+            </Link>
           </div>
           <div className="hero-stats">
             {stats.map((s) => (

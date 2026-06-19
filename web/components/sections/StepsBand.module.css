@@ -1,0 +1,51 @@
+/* W1 "3단계면 충분해요" — 공병 반납 → 포인트 적립 → 리필·굿즈 */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: start;
+  gap: 24px;
+  margin-top: 60px;
+}
+.step {
+  text-align: center;
+}
+.circle {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink), var(--pink2));
+  color: #fff;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 12px 28px rgba(237, 33, 138, 0.32);
+}
+.step h4 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.step p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.arrow {
+  align-self: center;
+  font-size: 26px;
+  color: #d6d4e2;
+  margin-top: 14px;
+}
+
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .arrow {
+    display: none;
+  }
+}

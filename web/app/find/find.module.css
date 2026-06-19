@@ -1,0 +1,149 @@
+/* W4 수거함 찾기 — 좌 지도 + 우 거리순 리스트. */
+.search {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.searchInput {
+  flex: 1;
+  min-width: 220px;
+  padding: 13px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: var(--font);
+  background: #fff;
+  outline: none;
+}
+.searchInput:focus {
+  border-color: var(--pink);
+}
+.chips {
+  display: flex;
+  gap: 8px;
+}
+.chip {
+  padding: 11px 18px;
+  border-radius: 100px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+.chipOn {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+/* 지도 placeholder */
+.map {
+  border-radius: 22px;
+  min-height: 520px;
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(13, 18, 64, 0.04),
+      rgba(13, 18, 64, 0.04) 12px,
+      transparent 12px,
+      transparent 24px
+    ),
+    var(--lilac);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+.mapTitle {
+  font-weight: 700;
+  color: var(--navy);
+}
+.mapNote {
+  font-size: 12.5px;
+  color: var(--muted);
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+/* 리스트 */
+.list {
+  max-height: 520px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.item {
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: var(--font);
+}
+.item:hover {
+  border-color: rgba(237, 33, 138, 0.4);
+}
+.itemOn {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(237, 33, 138, 0.12);
+}
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.itemName {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.dist {
+  font-size: 12.5px;
+  color: var(--pink);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.itemMeta {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.badge {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: var(--off);
+  color: var(--navy);
+}
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .map {
+    min-height: 280px;
+  }
+}

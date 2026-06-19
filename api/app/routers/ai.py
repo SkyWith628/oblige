@@ -3,6 +3,7 @@ import os
 import tempfile
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 
 from ..schemas import DetectResult
 from ..services.inference import ModelUnavailable, get_detector
@@ -32,7 +33,8 @@ async def detect_bottle(file: UploadFile = File(...)):
         except ModelUnavailable as e:
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(e))
 
-        return detector.detect(tmp_path)
+        # YOLO 추론은 CPU 블로킹 — 스레드풀에 위임해 이벤트 루프를 막지 않는다.
+        return await run_in_threadpool(detector.detect, tmp_path)
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)

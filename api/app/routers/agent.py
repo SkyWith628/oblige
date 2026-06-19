@@ -4,6 +4,7 @@ import os
 import tempfile
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from ..core.db import get_db
@@ -38,7 +39,11 @@ async def chat(
                 tmp_path = tmp.name
 
         try:
-            return agent_service.run_chat(db, user, message, parsed_history, tmp_path)
+            # run_chat 은 동기 블로킹(LLM 네트워크 I/O + DB) — 스레드풀에 위임해
+            # 이벤트 루프(다른 요청)를 막지 않는다.
+            return await run_in_threadpool(
+                agent_service.run_chat, db, user, message, parsed_history, tmp_path
+            )
         except agent_service.AgentUnavailable as e:
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(e))
     finally:

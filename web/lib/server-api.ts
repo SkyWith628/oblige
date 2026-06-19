@@ -3,7 +3,7 @@
 // 인증 호출은 쿠키의 JWT를 읽어 Authorization: Bearer 로 변환해 붙인다.
 import "server-only";
 import { getToken } from "./session";
-import type { User, Balance, PointTx, Return, Order } from "./types";
+import type { User, Balance, PointTx, Return, Order, DetectResult } from "./types";
 
 // 서버↔서버 호출이므로 내부 주소 우선. (NEXT_PUBLIC_* 는 클라이언트 노출용이라 폴백으로만)
 const API_BASE =
@@ -114,4 +114,36 @@ export function createOrder(
     used_point: usedPoint,
     delivery_address: deliveryAddress ?? null,
   });
+}
+
+/** 공병 반납 신청 — REQUESTED 상태 생성, 관리자 승인 시 공병당 포인트 적립. */
+export function createReturn(
+  bottleCount: number,
+  aiDetection: Record<string, unknown> | null = null,
+  returnMethod = "DELIVERY",
+) {
+  return authedPost<Return>("/api/returns", {
+    bottle_count: bottleCount,
+    return_method: returnMethod,
+    photo_urls: [],
+    ai_detection: aiDetection,
+  });
+}
+
+/** YOLO 공병 인식 — 인증 불필요(multipart). 모델 미배포 시 503 → unavailable. */
+export async function detectBottle(
+  file: File,
+): Promise<{ ok: boolean; data?: DetectResult; unavailable?: boolean; error?: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`${API_BASE}/api/ai/detect-bottle`, {
+    method: "POST",
+    body: fd,
+    cache: "no-store",
+  });
+  if (res.status === 503) {
+    return { ok: false, unavailable: true, error: await detail(res, "AI 인식 미가동") };
+  }
+  if (!res.ok) return { ok: false, error: await detail(res, "공병 인식에 실패했습니다") };
+  return { ok: true, data: (await res.json()) as DetectResult };
 }

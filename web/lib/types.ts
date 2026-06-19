@@ -78,6 +78,13 @@ export interface PointTx {
   created_at: string;
 }
 
+/** POST /api/ai/detect-bottle → DetectResult */
+export interface DetectResult {
+  detections: { label: string; confidence: number; box: number[] }[];
+  counts: Record<string, number>;
+  total: number;
+}
+
 /** OrderItemOut */
 export interface OrderItem {
   product_id: number;

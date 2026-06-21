@@ -100,11 +100,11 @@
   font-family: var(--font);
 }
 .item:hover {
-  border-color: rgba(237, 33, 138, 0.4);
+  border-color: rgba(240, 62, 140, 0.4);
 }
 .itemOn {
   border-color: var(--pink);
-  box-shadow: 0 0 0 3px rgba(237, 33, 138, 0.12);
+  box-shadow: 0 0 0 3px rgba(240, 62, 140, 0.12);
 }
 .itemTop {
   display: flex;

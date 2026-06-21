@@ -10,7 +10,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(237, 33, 138, 0.34), transparent 65%);
+  background: radial-gradient(circle, rgba(240, 62, 140, 0.34), transparent 65%);
   top: -200px;
   right: -160px;
   filter: blur(40px);
@@ -78,7 +78,7 @@
   height: 44px;
   margin: 0 auto 14px;
   border-radius: 50%;
-  background: rgba(237, 33, 138, 0.1);
+  background: rgba(240, 62, 140, 0.1);
   color: var(--pink);
   font-family: var(--serif);
   font-weight: 700;
@@ -118,7 +118,7 @@
 }
 .featured {
   border-color: var(--pink);
-  box-shadow: 0 24px 50px -24px rgba(237, 33, 138, 0.4);
+  box-shadow: 0 24px 50px -24px rgba(240, 62, 140, 0.4);
 }
 .badge {
   position: absolute;

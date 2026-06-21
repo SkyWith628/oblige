@@ -12,7 +12,7 @@
   color: #fff;
   font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 14px 30px -8px rgba(237, 33, 138, 0.5);
+  box-shadow: 0 14px 30px -8px rgba(240, 62, 140, 0.5);
   transition: transform 0.2s var(--ease, ease);
 }
 .fab:hover {

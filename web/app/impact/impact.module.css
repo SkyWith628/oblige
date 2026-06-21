@@ -12,7 +12,7 @@
   width: 640px;
   height: 640px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(237, 33, 138, 0.3), transparent 65%);
+  background: radial-gradient(circle, rgba(240, 62, 140, 0.3), transparent 65%);
   top: -240px;
   left: 50%;
   transform: translateX(-50%);

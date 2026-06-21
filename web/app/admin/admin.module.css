@@ -6,7 +6,7 @@
   background: var(--cream);
 }
 .side {
-  background: var(--navy);
+  background: linear-gradient(180deg, #11154d 0%, var(--navy) 55%, #0a0e30 100%);
   color: #fff;
   padding: 24px 16px;
   display: flex;
@@ -14,9 +14,10 @@
   gap: 4px;
 }
 .brand {
+  font-family: var(--display);
   font-weight: 900;
-  letter-spacing: 0.08em;
-  font-size: 18px;
+  letter-spacing: 0.04em;
+  font-size: 22px;
   padding: 8px 12px 6px;
 }
 .brand span {
@@ -52,6 +53,7 @@
 .navOn {
   background: var(--pink);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(240, 62, 140, 0.35);
 }
 .navOn:hover {
   background: var(--pink);
@@ -103,14 +105,22 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 24px;
+  box-shadow: 0 4px 20px rgba(13, 18, 64, 0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.kpi:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(13, 18, 64, 0.1);
 }
 .alert {
   border-color: var(--pink);
-  background: linear-gradient(165deg, rgba(237, 33, 138, 0.08), #fff);
+  background: linear-gradient(165deg, rgba(240, 62, 140, 0.08), #fff);
 }
 .kpiNum {
-  font-size: 30px;
-  font-weight: 800;
+  font-family: var(--display);
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
   color: var(--navy);
 }
 .alert .kpiNum {
@@ -129,6 +139,7 @@
   border-radius: 18px;
   padding: 24px;
   margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(13, 18, 64, 0.05);
 }
 .panelTitle {
   font-size: 15px;
@@ -165,7 +176,7 @@
   color: var(--navy);
 }
 .stReq {
-  background: rgba(237, 33, 138, 0.1);
+  background: rgba(240, 62, 140, 0.1);
   color: var(--pink);
 }
 .stApp {

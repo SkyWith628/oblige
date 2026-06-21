@@ -14,7 +14,7 @@ export default function Logo({
       ? ({ "--fill-0": "#ffffff" } as CSSProperties)
       : {};
   const fill = "var(--fill-0, #0F173F)";
-  const pink = "var(--fill-0, #ED218A)";
+  const pink = "var(--fill-0, #F03E8C)";
   return (
     <svg
       height={height}

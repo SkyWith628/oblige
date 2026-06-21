@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond } from "next/font/google";
+import { Cormorant_Garamond, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 // 라틴 디스플레이 세리프 — 럭셔리 뷰티 톤의 고대비 가라몬드.
@@ -9,6 +9,14 @@ const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
+});
+
+// 히어로 디스플레이 세리프 — 옛 정적(index.html)의 헤드라인 서체. 묵직한 900 웨이트.
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["700", "900"],
   display: "swap",
 });
 
@@ -22,7 +30,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" className={cormorant.variable}>
+    <html lang="ko" className={`${cormorant.variable} ${playfair.variable}`}>
       <head>
         {/* 본문 폰트 Pretendard — Google Fonts 미제공이라 CDN 로드 */}
         <link

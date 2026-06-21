@@ -28,7 +28,9 @@ export default function ProductGrid({
         <div className="sec-head">
           <div>
             <div className="sec-eye">{eyebrow}</div>
-            <h2 className="sec-title">{title}</h2>
+            <h2 className="sec-heading" style={{ marginBottom: 0 }}>
+              {title}
+            </h2>
           </div>
           <Link className="btn btn-ghost" href={ctaHref}>
             전체 보기 →

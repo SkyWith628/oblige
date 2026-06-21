@@ -1,86 +1,50 @@
 import Link from "next/link";
-import type { Stat } from "@/lib/types";
 
-export default function Hero({ stats }: { stats: Stat[] }) {
+// 옛 정적(index.html) Hero 포팅 — orbs 배경 + 세리프 타이틀 "Return Beauty, Refill Value."
+// 동적 부분(버튼)은 옛 정적의 인라인 모달 대신 새 앱의 실제 라우트로 연결.
+export default function Hero() {
   return (
     <header className="hero">
-      <div className="hero-grid-bg" />
-      <div className="hero-glow" />
+      <div className="hero-bg" aria-hidden="true">
+        <div className="hero-orb hero-orb1" />
+        <div className="hero-orb hero-orb2" />
+        <div className="hero-orb hero-orb3" />
+      </div>
+      <span className="hero-watermark" aria-hidden="true">
+        OBLIGE
+      </span>
+
       <div className="hero-in">
-        <div>
-          <span className="eyebrow">Vegan · Circular · Reward</span>
+        <div className="hero-inner">
+          <span className="hero-badge">Vegan · Sustainable · ESG Cosmetics</span>
           <h1>
-            공병이 다시
+            Return Beauty,
             <br />
-            <em>돌아오는</em> 곳
+            <em>Refill Value.</em>
           </h1>
           <p>
-            다 쓴 화장품 공병을 반납하면 포인트로 돌려드려요. 모은 포인트로
-            리필하고, 굿즈로 바꾸고, 지구도 함께 지켜요.
+            공병을 반납하고, 지속가능한 아름다움을 채우다.
+            <br />
+            비건 화장품 구매 · 공병 반납 · 포인트 적립 · 리필 보상까지 연결된 ESG
+            코스메틱 플랫폼.
           </p>
           <div className="hero-btns">
-            <Link className="btn btn-pink btn-lg" href="/find">
-              공병 반납 시작하기
+            <Link className="btn btn-pink btn-lg" href="/return">
+              공병 반납하기
             </Link>
-            <Link className="btn btn-ghost btn-lg hero-ghost" href="/how-it-works">
-              작동 방식 보기 →
+            <Link className="btn btn-ghost btn-lg hero-ghost" href="/shop">
+              비건 제품 보러가기
             </Link>
-          </div>
-          <div className="hero-stats">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="n">
-                  <b>{s.value}</b>
-                </div>
-                <div className="l">{s.label}</div>
-              </div>
-            ))}
+            <Link className="btn btn-ghost btn-lg hero-ghost" href="/about">
+              OBLIGE 소개
+            </Link>
           </div>
         </div>
+      </div>
 
-        <div className="scene" aria-hidden="true">
-          <div className="stage">
-            <div className="panel p-scan">
-              <div className="scan-view">
-                <div className="bottle">🧴</div>
-                <div className="det-box">
-                  <span className="det-tag">토너 공병 · 98%</span>
-                </div>
-                <div className="scan-line" />
-              </div>
-              <div className="scan-foot">
-                <div>
-                  <div className="t">AI 공병 인식</div>
-                  <div className="s">사진 한 장으로 자동 적립</div>
-                </div>
-                <div className="pts">+200P</div>
-              </div>
-            </div>
-            <div className="panel p-grade">
-              <div className="pg-top">
-                <div className="pg-ic">🍃</div>
-                <div>
-                  <div className="t">나의 멤버십</div>
-                  <div className="s">Leaf · 5,200P</div>
-                </div>
-              </div>
-              <div className="pg-bar">
-                <i />
-              </div>
-              <div className="pg-meta">
-                <span>공병 5개</span>
-                <span>Tree까지 2개</span>
-              </div>
-            </div>
-            <div className="panel p-chip">
-              <span className="e">🌍</span>
-              <div>
-                <div className="n">3.2t</div>
-                <div className="l">함께 절감한 플라스틱</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="scroll-hint" aria-hidden="true">
+        <div className="scroll-line" />
+        <span>SCROLL</span>
       </div>
     </header>
   );

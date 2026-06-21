@@ -204,12 +204,14 @@ export const updateAdminProduct = (
 export async function chatAgent(
   message: string,
   history: { role: string; content: string }[],
+  image?: File | null,
 ): Promise<{ ok: boolean; reply?: string; unavailable?: boolean; error?: string }> {
   const token = await getToken();
   if (!token) return { ok: false, error: "로그인이 필요합니다" };
   const fd = new FormData();
   fd.append("message", message);
   if (history.length) fd.append("history", JSON.stringify(history));
+  if (image && image.size > 0) fd.append("image", image); // 백엔드 라우터의 image 필드
   const res = await fetch(`${API_BASE}/api/agent/chat`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },

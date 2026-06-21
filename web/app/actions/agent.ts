@@ -13,13 +13,26 @@ export interface ChatResult {
   error?: string;
 }
 
-export async function sendChatAction(
-  history: ChatTurn[],
-  message: string,
-): Promise<ChatResult> {
+// 멀티파트 입력: message(필수) + history(JSON) + image(선택, File).
+// 파일 업로드는 이 코드베이스 관례대로 FormData 로 받는다 (detectAction 과 동일).
+export async function sendChatAction(formData: FormData): Promise<ChatResult> {
+  const message = String(formData.get("message") ?? "");
+  let history: ChatTurn[] = [];
+  const raw = formData.get("history");
+  if (typeof raw === "string" && raw) {
+    try {
+      history = JSON.parse(raw) as ChatTurn[];
+    } catch {
+      history = [];
+    }
+  }
+  const img = formData.get("image");
+  const image = img instanceof File && img.size > 0 ? img : null;
+
   const res = await chatAgent(
     message,
     history.map((h) => ({ role: h.role, content: h.content })),
+    image,
   );
   if (res.unavailable) return { unavailable: true };
   if (!res.ok) return { error: res.error ?? "응답 실패" };

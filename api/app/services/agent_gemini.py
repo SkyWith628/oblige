@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 
 from ..core.config import settings
 from ..models import User
+from . import agent_state
 from .agent_tools import (
     MAX_TOOL_ROUNDS,
     AgentUnavailable,
+    ToolContext,
     create_return_impl,
     detect_bottle_impl,
     membership_impl,
@@ -43,13 +45,13 @@ TOOLS = [
 ]
 
 
-def _dispatch(name: str, tool_input: dict, db: Session, user: User, image_path: str | None) -> dict:
+def _dispatch(name: str, tool_input: dict, ctx: ToolContext) -> dict:
     if name == "detect_bottle":
-        return detect_bottle_impl(db, user, image_path)
+        return detect_bottle_impl(ctx)
     if name == "get_membership_status":
-        return membership_impl(db, user)
+        return membership_impl(ctx)
     if name == "create_return":
-        return create_return_impl(db, user, tool_input.get("bottle_count", 0))
+        return create_return_impl(ctx, tool_input.get("bottle_count", 0))
     return {"error": f"알 수 없는 도구: {name}"}
 
 
@@ -88,6 +90,9 @@ def run_chat(
     client = _client()
     contents = _to_contents(history, message)
     actions: list[dict] = []
+    ctx = ToolContext(db=db, user=user, image_path=image_path)
+    # C2: 이전 턴의 탐지 결과를 복원 (사진 없는 후속 턴에서도 검증 가능)
+    ctx.last_detection = agent_state.recall_detection(getattr(user, "id", None))
 
     # 함수 호출을 우리가 직접 루프 돌리므로 자동 실행은 끈다.
     config = types.GenerateContentConfig(
@@ -96,30 +101,34 @@ def run_chat(
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
     )
 
-    for _ in range(MAX_TOOL_ROUNDS):
-        resp = client.models.generate_content(
-            model=settings.agent_model,
-            contents=contents,
-            config=config,
-        )
-
-        candidate = resp.candidates[0] if resp.candidates else None
-        parts = (candidate.content.parts if candidate and candidate.content else None) or []
-        calls = [p.function_call for p in parts if getattr(p, "function_call", None)]
-
-        if not calls:
-            # 도구 호출이 없으면 최종 답변. .text 는 텍스트 파트만 모아준다.
-            return {"reply": resp.text or "", "actions": actions}
-
-        # 모델 턴(함수 호출 포함)을 그대로 대화에 보존
-        contents.append(candidate.content)
-        response_parts = []
-        for fc in calls:
-            out = _dispatch(fc.name, dict(fc.args or {}), db, user, image_path)
-            actions.append({"tool": fc.name, "output": out})
-            response_parts.append(
-                types.Part.from_function_response(name=fc.name, response=out)
+    try:
+        for _ in range(MAX_TOOL_ROUNDS):
+            resp = client.models.generate_content(
+                model=settings.agent_model,
+                contents=contents,
+                config=config,
             )
-        contents.append(types.Content(role="user", parts=response_parts))
 
-    return {"reply": "대화가 너무 길어졌습니다. 다시 시도해 주세요.", "actions": actions}
+            candidate = resp.candidates[0] if resp.candidates else None
+            parts = (candidate.content.parts if candidate and candidate.content else None) or []
+            calls = [p.function_call for p in parts if getattr(p, "function_call", None)]
+
+            if not calls:
+                # 도구 호출이 없으면 최종 답변. .text 는 텍스트 파트만 모아준다.
+                return {"reply": resp.text or "", "actions": actions}
+
+            # 모델 턴(함수 호출 포함)을 그대로 대화에 보존
+            contents.append(candidate.content)
+            response_parts = []
+            for fc in calls:
+                out = _dispatch(fc.name, dict(fc.args or {}), ctx)
+                actions.append({"tool": fc.name, "output": out})
+                response_parts.append(
+                    types.Part.from_function_response(name=fc.name, response=out)
+                )
+            contents.append(types.Content(role="user", parts=response_parts))
+
+        return {"reply": "대화가 너무 길어졌습니다. 다시 시도해 주세요.", "actions": actions}
+    finally:
+        # C2: 이번 턴의 탐지 결과를 다음 턴을 위해 저장 (소비됐으면 None → 캐시 제거)
+        agent_state.remember_detection(getattr(user, "id", None), ctx.last_detection)

@@ -9,6 +9,8 @@ Claude: @tool MCP). 도구 로직을 한곳에 모아 두 백엔드가 항상 �
   - get_membership_status: 현재 사용자의 등급·포인트·누적 반납
   - create_return        : 공병 반납 신청 생성
 """
+from dataclasses import dataclass
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,6 +26,20 @@ class AgentUnavailable(RuntimeError):
     """LLM 백엔드 미설치/미설정/미인증 (예: SDK 미설치, API 키 없음, CLI 미로그인)."""
 
 
+@dataclass
+class ToolContext:
+    """한 대화(요청) 동안 도구들이 공유하는 상태.
+
+    detect_bottle 이 채운 last_detection 을 create_return 이 검증 근거로 쓴다 (W1).
+    이 객체를 턴 사이에 보존하면 멀티턴 컨텍스트(C2)로 확장된다.
+    """
+
+    db: Session
+    user: User
+    image_path: str | None = None
+    last_detection: dict | None = None  # detect_bottle 성공 결과 (검증 근거)
+
+
 def system_prompt(user: User) -> str:
     return (
         "당신은 비건·ESG 코스메틱 브랜드 OBLIGE의 '반납 어시스턴트'입니다. "
@@ -33,6 +49,8 @@ def system_prompt(user: User) -> str:
         "원칙:\n"
         "- 사용자가 공병 사진을 올렸다면 detect_bottle 도구로 종류·개수를 확인하세요.\n"
         "- 반납 신청을 만들기 전에 탐지된 개수를 사용자에게 알려주고 동의를 받으세요.\n"
+        "- 반납 신청(create_return)은 반드시 detect_bottle로 사진을 확인한 뒤에만 가능합니다. "
+        "사진이 없으면 먼저 사진을 요청하세요.\n"
         "- 등급/포인트 질문에는 get_membership_status로 정확한 값을 조회해 답하세요.\n"
         "- 공병 1개당 약 500P가 적립되며, 관리자 검수 후 최종 지급됩니다.\n"
         "- 따뜻하고 간결하게, 한국어로 답하세요."
@@ -42,20 +60,23 @@ def system_prompt(user: User) -> str:
 # ── 도구 구현 (벤더 무관) ───────────────────────────────────────────────
 
 
-def detect_bottle_impl(db: Session, user: User, image_path: str | None) -> dict:
-    """업로드 사진을 YOLO로 분석. 사진이 없거나 모델 미설치면 error 딕셔너리 반환."""
-    if not image_path:
+def detect_bottle_impl(ctx: ToolContext) -> dict:
+    """업로드 사진을 YOLO로 분석. 성공 결과는 ctx.last_detection 에 보존(검증 근거)."""
+    if not ctx.image_path:
         return {"error": "분석할 사진이 없습니다. 사용자에게 공병 사진을 요청하세요."}
     try:
         detector = inference.get_detector()
     except inference.ModelUnavailable as e:
         return {"error": str(e)}
-    return detector.detect(image_path)
+    result = detector.detect(ctx.image_path)
+    ctx.last_detection = result  # create_return 이 검증 근거로 사용 (W1)
+    return result
 
 
-def membership_impl(db: Session, user: User) -> dict:
+def membership_impl(ctx: ToolContext) -> dict:
     """현재 사용자의 등급·포인트·누적 반납·다음 등급까지 남은 개수."""
-    nxt = db.scalar(
+    user = ctx.user
+    nxt = ctx.db.scalar(
         select(MembershipGrade)
         .where(MembershipGrade.min_return_count > user.bottle_return_count)
         .order_by(MembershipGrade.min_return_count.asc())
@@ -71,16 +92,44 @@ def membership_impl(db: Session, user: User) -> dict:
     }
 
 
-def create_return_impl(db: Session, user: User, bottle_count: int) -> dict:
-    """공병 반납 신청 생성. 실패 사유는 error 딕셔너리로 LLM에 전달."""
-    count = int(bottle_count or 0)
+def create_return_impl(ctx: ToolContext, bottle_count: int) -> dict:
+    """공병 반납 신청 생성 — 사진 검증(detect_bottle)을 전제로 한다 (W1).
+
+    검증 정책:
+      1) 이 대화에서 detect_bottle 로 공병이 확인되지 않았으면 거부.
+      2) 신청 개수가 탐지된 개수보다 많으면 거부.
+      3) 통과 시 탐지 결과를 ai_detection 증빙으로 반납 레코드에 첨부.
+    """
+    det = ctx.last_detection
+    detected = int(det.get("total", 0)) if det else 0
+
+    # W1-① 사진 검증 없이는 신청 불가
+    if detected <= 0:
+        return {
+            "error": "공병 사진을 먼저 올려 detect_bottle 로 확인해야 반납 신청이 "
+            "가능합니다. 사용자에게 공병 사진을 요청하세요."
+        }
+
+    requested = int(bottle_count or 0)
+    # W1-② 탐지된 개수보다 많이 신청 불가 (개수 미지정이면 탐지 개수로)
+    if requested > detected:
+        return {
+            "error": f"신청 개수({requested})가 사진에서 탐지된 개수({detected})보다 많습니다. "
+            f"최대 {detected}개까지 신청할 수 있어요."
+        }
+    count = requested if requested > 0 else detected
+
     try:
-        r = return_service.create_return(db, user, count)
+        # W1-③ 탐지 결과를 증빙(ai_detection)으로 첨부
+        r = return_service.create_return(ctx.db, ctx.user, count, ai_detection=det)
     except Exception as e:  # noqa: BLE001 — 사용자에게 사유 전달
         return {"error": str(getattr(e, "detail", e))}
+    ctx.last_detection = None  # 탐지 소비 → 같은 사진으로 중복 신청 방지 (C2)
     return {
         "return_number": r.return_number,
         "bottle_count": r.bottle_count,
         "status": r.return_status,
-        "message": "반납 신청 완료. 관리자 검수 후 포인트가 지급됩니다.",
+        "detected_total": detected,
+        "verified": True,
+        "message": "반납 신청 완료(사진 검증됨). 관리자 검수 후 포인트가 지급됩니다.",
     }

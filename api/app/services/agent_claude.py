@@ -22,16 +22,19 @@ from sqlalchemy.orm import Session
 
 from ..core.config import settings
 from ..models import User
+from . import agent_state
 from .agent_tools import (
     MAX_TOOL_ROUNDS,
     AgentUnavailable,
+    ToolContext,
     create_return_impl,
     detect_bottle_impl,
     membership_impl,
     system_prompt,
 )
 
-# 요청 단위 컨텍스트 — 도구 핸들러가 여기서 db/user/image_path/actions 를 읽는다.
+# 요청 단위 컨텍스트 — 도구 핸들러가 여기서 ToolContext 와 actions 를 읽는다.
+# 구조: {"ctx": ToolContext, "actions": list[dict]}
 _ctx: contextvars.ContextVar[dict] = contextvars.ContextVar("oblige_agent_ctx")
 
 
@@ -55,7 +58,7 @@ def _build_tools() -> list:
     )
     async def detect_bottle(args: dict[str, Any]) -> dict[str, Any]:
         c = _ctx.get()
-        out = detect_bottle_impl(c["db"], c["user"], c["image_path"])
+        out = detect_bottle_impl(c["ctx"])
         c["actions"].append({"tool": "detect_bottle", "output": out})
         return _text_result(out)
 
@@ -66,7 +69,7 @@ def _build_tools() -> list:
     )
     async def get_membership_status(args: dict[str, Any]) -> dict[str, Any]:
         c = _ctx.get()
-        out = membership_impl(c["db"], c["user"])
+        out = membership_impl(c["ctx"])
         c["actions"].append({"tool": "get_membership_status", "output": out})
         return _text_result(out)
 
@@ -77,7 +80,7 @@ def _build_tools() -> list:
     )
     async def create_return(args: dict[str, Any]) -> dict[str, Any]:
         c = _ctx.get()
-        out = create_return_impl(c["db"], c["user"], args.get("bottle_count", 0))
+        out = create_return_impl(c["ctx"], args.get("bottle_count", 0))
         c["actions"].append({"tool": "create_return", "output": out})
         return _text_result(out)
 
@@ -137,7 +140,10 @@ async def run_chat(
         model=settings.agent_model_claude,  # None 이면 CLI 기본(구독 모델)
     )
 
-    ctx = {"db": db, "user": user, "image_path": image_path, "actions": []}
+    tool_ctx = ToolContext(db=db, user=user, image_path=image_path)
+    # C2: 이전 턴의 탐지 결과 복원 (사진 없는 후속 턴에서도 검증 가능)
+    tool_ctx.last_detection = agent_state.recall_detection(getattr(user, "id", None))
+    ctx = {"ctx": tool_ctx, "actions": []}
     token = _ctx.set(ctx)
     reply = ""
     text_fallback: list[str] = []
@@ -152,8 +158,17 @@ async def run_chat(
                     if isinstance(block, TextBlock):
                         text_fallback.append(block.text)
     except Exception as e:  # SDK/CLI 오류(미로그인·미설치 등)를 503 로 명확히 surface
+        # 미로그인 시 SDK는 "Not logged in" 텍스트를 흘린 뒤 모호한 예외를 던진다 →
+        # 수집된 텍스트로 원인을 식별해 actionable 메시지로 바꾼다.
+        hint = "".join(text_fallback).lower()
+        if "logged in" in hint or "/login" in hint or "login" in hint:
+            raise AgentUnavailable(
+                "Claude Code CLI 미로그인 — 터미널에서 `claude` 실행 후 /login (구독) 하세요."
+            ) from e
         raise AgentUnavailable(f"Claude Agent SDK 오류: {e}") from e
     finally:
+        # C2: 이번 턴의 탐지 결과를 다음 턴을 위해 저장 (소비됐으면 None → 캐시 제거)
+        agent_state.remember_detection(getattr(user, "id", None), tool_ctx.last_detection)
         _ctx.reset(token)
 
     return {"reply": reply or "".join(text_fallback).strip(), "actions": ctx["actions"]}

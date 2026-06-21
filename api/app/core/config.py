@@ -22,10 +22,17 @@ class Settings(BaseSettings):
     # AI 모델 가중치 경로 (ai/ 에서 학습한 best.pt)
     model_path: str = "../ai/runs/detect/cosmetic_bottle/weights/best.pt"
 
-    # AI 에이전트 (반납 어시스턴트) — Gemini 2.5 Flash (임시)
-    # GOOGLE_API_KEY 환경변수에서 로드. (원래는 Claude — 추후 복귀 가능)
+    # AI 에이전트 (반납 어시스턴트) — 백엔드 선택: "gemini"(기본) | "claude"
+    #   gemini : Gemini 2.5 Flash, GOOGLE_API_KEY 필요, 배포 가능.
+    #   claude : Claude Agent SDK(구독 인증), 로컬 전용(배포 서버엔 로그인 없음).
+    agent_backend: str = "gemini"
+
+    # Gemini (현행) — GOOGLE_API_KEY 환경변수에서 로드.
     google_api_key: str = ""
     agent_model: str = "gemini-2.5-flash"
+
+    # Claude (구독, Claude Agent SDK). None 이면 Claude Code CLI 기본 모델 사용.
+    agent_model_claude: str | None = None
 
 
 settings = Settings()

@@ -1,0 +1,20 @@
+# 줄바꿈 정규화 — 저장소엔 항상 LF로 저장(autocrlf 의존 제거).
+# Windows↔Mac 교차 작업 시 "전 파일 수정"처럼 보이는 CRLF 노이즈를 막는다.
+* text=auto eol=lf
+
+# 셸/배치 스크립트는 각 OS 줄바꿈 유지
+*.sh   text eol=lf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# 바이너리 — diff/정규화 대상에서 제외
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.gif  binary
+*.svg  text
+*.pt   binary
+*.pth  binary
+*.zip  binary
+*.ico  binary

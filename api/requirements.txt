@@ -9,7 +9,12 @@ pydantic[email]>=2.8
 PyJWT>=2.9
 bcrypt>=4.2
 python-multipart>=0.0.9
-google-genai>=1.0   # 반납 어시스턴트 LLM (임시: Gemini 2.5 Flash. 원래는 anthropic>=0.40)
+google-genai>=1.0   # 반납 어시스턴트 LLM 백엔드 A — Gemini 2.5 Flash (API 키, 배포 가능)
+
+# 반납 어시스턴트 LLM 백엔드 B — Claude (구독 인증, 로컬 전용).
+# AGENT_BACKEND=claude 일 때만 필요. 별도로 Claude Code CLI 설치 + `claude` 로그인 필수.
+#   npm i -g @anthropic-ai/claude-code  &&  claude  (→ /login)
+claude-agent-sdk>=0.1   # 미설치/미로그인 시 /api/agent/* 는 503 반환
 
 # ── AI 추론 (무거움 ~2GB, 별도 설치) ──────────────────────
 # 학습/서빙 시에만 설치. 미설치 시 /api/ai/* 는 503 반환.

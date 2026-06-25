@@ -17,16 +17,16 @@ docker compose up -d --build
 ## 2. Railway — api + DB
 
 1. Railway 프로젝트 생성 → **PostgreSQL** 플러그인 추가 (자동으로 `DATABASE_URL` 제공).
-   - 단, Railway는 `postgresql://` 스킴을 주는데 우리는 psycopg3라 `postgresql+psycopg://` 필요.
-     서비스 변수에 `DATABASE_URL`을 `postgresql+psycopg://...`로 덮어쓰거나, 앱에서 스킴 보정.
+   - Railway는 `postgresql://` 스킴을 주는데 우리는 psycopg3라 `postgresql+psycopg://`가 필요하다.
+     이제 **앱(`config.py`)이 부팅 시 자동 보정**하므로 Railway가 준 `DATABASE_URL`을 그대로 써도 된다.
 2. **api 서비스** 추가 → GitHub 레포 연결, **Root Directory = `api`** (Dockerfile 자동 감지).
 3. 환경변수 설정:
    | 변수 | 값 |
    |---|---|
-   | `DATABASE_URL` | `postgresql+psycopg://...` (Postgres 플러그인 값 기반) |
+   | `DATABASE_URL` | Postgres 플러그인이 준 값 그대로 (`postgresql://...` → 앱이 자동 보정) |
    | `JWT_SECRET` | 32바이트 이상 랜덤 문자열 |
    | `CORS_ORIGINS` | `["https://<vercel-도메인>"]` |
-   | `ANTHROPIC_API_KEY` | (에이전트 사용 시) Claude API 키 |
+   | `GOOGLE_API_KEY` | (에이전트 사용 시) Gemini API 키 — 기본 백엔드가 `gemini`(`AGENT_BACKEND`) |
 4. 최초 1회 스키마 적용: Railway Postgres 콘솔에서 `db/schema.sql` 실행 (또는 Phase 3에서 Alembic 도입 후 `alembic upgrade head`).
 
 > AI 추론(`/api/ai/*`)을 쓰려면 api 이미지에 `ultralytics`(+torch, ~2GB)를 추가해야 한다.
